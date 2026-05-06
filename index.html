@@ -229,6 +229,7 @@
     .doc-table .right { text-align: right; white-space: nowrap; }
     .total-row td { font-weight: 700; background: rgba(251, 247, 239, .94); }
     .deposit-row td { background: rgba(251, 247, 239, .82); }
+    .balance-row td { background: rgba(246, 252, 248, .82); }
     .muted { color: #6b665d !important; }
     .doc-pre { white-space: pre-line; margin: 0 0 8px; font-size: 8.8pt; }
     .doc-flow { margin: 0 0 7px; break-inside: avoid; page-break-inside: avoid; }
@@ -1355,7 +1356,7 @@
         },
         preview: { title: 'Anteprima documento' },
         doc: {
-          quote: 'Preventivo', issueDate: 'Emissione', validUntil: 'Valido fino al', preparedBy: 'Preparato da', destination: 'Destinazione', dates: 'Date', duration: 'Durata', travelers: 'Viaggiatori', style: 'Stile', sender: 'Emittente', recipient: 'Destinatario', client: 'Cliente finale', partner: 'Partner', intro: 'Introduzione', highlights: 'Highlights del viaggio', itinerary: 'Itinerario sintetico', services: 'Servizi inclusi / esclusi', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', clientNotes: 'Note per il cliente', pricing: 'Proposta economica', terms: 'Condizioni', payment: 'Pagamento', cancellation: 'Cancellazione', validity: 'Validità', booking: 'Booking', total: 'Totale', unit: 'Unità', qty: 'Qtà', amount: 'Importo', item: 'Voce', taxNote: 'Nota', insurance: 'Assicurazione viaggio', bookingRequirements: 'Per prenotare', bookingDeposit: 'ACCONTO NECESSARIO PER LA PRENOTAZIONE (30%)', b2bCopy: 'Copia uso interno', clientCopy: 'Copia cliente', b2bLabel: 'Prezzo partner', b2cLabel: 'Prezzo cliente', internalLabel: 'Costo interno', margin: 'Margine lordo stimato', advisorB2bCopy: 'Copia B2B agente', confidential: 'Confidenziale - uso interno/partner', publicDoc: 'Documento cliente', noData: 'Non specificato'
+          quote: 'Preventivo', issueDate: 'Emissione', validUntil: 'Valido fino al', preparedBy: 'Preparato da', destination: 'Destinazione', dates: 'Date', duration: 'Durata', travelers: 'Viaggiatori', style: 'Stile', sender: 'Emittente', recipient: 'Destinatario', client: 'Cliente finale', partner: 'Partner', intro: 'Introduzione', highlights: 'Highlights del viaggio', itinerary: 'Itinerario sintetico', services: 'Servizi inclusi / esclusi', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', clientNotes: 'Note per il cliente', pricing: 'Il valore del vostro viaggio', terms: 'Condizioni', payment: 'Pagamento', cancellation: 'Cancellazione', validity: 'Validità', booking: 'Booking', total: 'Totale', unit: 'Unità', qty: 'Qtà', amount: 'Importo', item: 'Voce', taxNote: 'Nota', insurance: 'Assicurazione viaggio', bookingRequirements: 'Per prenotare', bookingDeposit: 'ACCONTO NECESSARIO PER LA PRENOTAZIONE (30%)', bookingBalance: 'SALDO DA EFFETTUARE ENTRO 45GG DALLA PARTENZA', b2bCopy: 'Copia uso interno', clientCopy: 'Copia cliente', b2bLabel: 'Prezzo partner', b2cLabel: 'Prezzo cliente', internalLabel: 'Costo interno', margin: 'Margine lordo stimato', advisorB2bCopy: 'Copia B2B agente', confidential: 'Confidenziale - uso interno/partner', publicDoc: 'Documento cliente', noData: 'Non specificato'
         }
       },
       en: {
@@ -1403,7 +1404,7 @@
         },
         preview: { title: 'Document preview' },
         doc: {
-          quote: 'Quote', issueDate: 'Issue date', validUntil: 'Valid until', preparedBy: 'Prepared by', destination: 'Destination', dates: 'Dates', duration: 'Duration', travelers: 'Travelers', style: 'Style', sender: 'Sender', recipient: 'Recipient', client: 'Final client', partner: 'Partner', intro: 'Introduction', highlights: 'Trip highlights', itinerary: 'Itinerary overview', services: 'Included / excluded services', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', clientNotes: 'Client notes', pricing: 'Commercial proposal', terms: 'Terms', payment: 'Payment', cancellation: 'Cancellation', validity: 'Validity', booking: 'Booking', total: 'Total', unit: 'Unit', qty: 'Qty', amount: 'Amount', item: 'Item', taxNote: 'Note', insurance: 'Travel insurance', bookingRequirements: 'To book', bookingDeposit: 'DEPOSIT REQUIRED TO CONFIRM THE BOOKING (30%)', b2bCopy: 'Internal copy', clientCopy: 'Client copy', b2bLabel: 'Partner price', b2cLabel: 'Client price', internalLabel: 'Internal cost', margin: 'Estimated gross margin', advisorB2bCopy: 'Advisor B2B copy', confidential: 'Confidential - internal/partner use', publicDoc: 'Client document', noData: 'Not specified'
+          quote: 'Quote', issueDate: 'Issue date', validUntil: 'Valid until', preparedBy: 'Prepared by', destination: 'Destination', dates: 'Dates', duration: 'Duration', travelers: 'Travelers', style: 'Style', sender: 'Sender', recipient: 'Recipient', client: 'Final client', partner: 'Partner', intro: 'Introduction', highlights: 'Trip highlights', itinerary: 'Itinerary overview', services: 'Included / excluded services', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', clientNotes: 'Client notes', pricing: 'The value of your journey', terms: 'Terms', payment: 'Payment', cancellation: 'Cancellation', validity: 'Validity', booking: 'Booking', total: 'Total', unit: 'Unit', qty: 'Qty', amount: 'Amount', item: 'Item', taxNote: 'Note', insurance: 'Travel insurance', bookingRequirements: 'To book', bookingDeposit: 'DEPOSIT REQUIRED TO CONFIRM THE BOOKING (30%)', bookingBalance: 'BALANCE DUE 45 DAYS BEFORE DEPARTURE', b2bCopy: 'Internal copy', clientCopy: 'Client copy', b2bLabel: 'Partner price', b2cLabel: 'Client price', internalLabel: 'Internal cost', margin: 'Estimated gross margin', advisorB2bCopy: 'Advisor B2B copy', confidential: 'Confidential - internal/partner use', publicDoc: 'Client document', noData: 'Not specified'
         }
       }
     };
@@ -1872,6 +1873,7 @@
         <div class="total-line"><span>${escapeHtml(t('doc.b2bLabel'))}</span><strong>${escapeHtml(money(totals.b2b, state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.b2cLabel'))}</span><strong>${escapeHtml(money(totals.b2c, state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.bookingDeposit'))}</span><strong>${escapeHtml(money(bookingDeposit(totals.b2c), state.meta.currency))}</strong></div>
+        <div class="total-line"><span>${escapeHtml(t('doc.bookingBalance'))}</span><strong>${escapeHtml(money(bookingBalance(totals.b2c), state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.margin'))}</span><strong>${escapeHtml(money(totals.margin, state.meta.currency))}</strong></div>
       `;
     }
@@ -1889,6 +1891,11 @@
     function bookingDeposit(total) {
       const base = Math.max(0, Number(total || 0));
       return Math.ceil((base * 0.30) / 10) * 10;
+    }
+
+    function bookingBalance(total) {
+      const base = Math.max(0, Number(total || 0));
+      return Math.max(0, base - bookingDeposit(base));
     }
 
     function selectedPriceKey() { return state.settings.workflow === 'b2b' ? 'b2b' : 'b2c'; }
@@ -2301,6 +2308,14 @@
           el('td', 'right', money(bookingDeposit(totals.b2b), state.meta.currency)),
           el('td', 'right', money(bookingDeposit(totals.b2c), state.meta.currency))
         ]));
+        tbody.appendChild(el('tr', 'total-row balance-row', [
+          el('td', '', t('doc.bookingBalance')),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', money(bookingBalance(totals.b2b), state.meta.currency)),
+          el('td', 'right', money(bookingBalance(totals.b2c), state.meta.currency))
+        ]));
         tbody.appendChild(el('tr', '', [
           el('td', '', t('doc.margin')),
           el('td', 'right', ''),
@@ -2322,6 +2337,12 @@
           el('td', 'right', ''),
           el('td', 'right', money(bookingDeposit(totals.b2b), state.meta.currency))
         ]));
+        tbody.appendChild(el('tr', 'total-row balance-row', [
+          el('td', '', t('doc.bookingBalance')),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', money(bookingBalance(totals.b2b), state.meta.currency))
+        ]));
       } else {
         tbody.appendChild(el('tr', 'total-row', [
           el('td', '', t('doc.total')),
@@ -2334,6 +2355,12 @@
           el('td', 'right', ''),
           el('td', 'right', ''),
           el('td', 'right', money(bookingDeposit(totals.b2c), state.meta.currency))
+        ]));
+        tbody.appendChild(el('tr', 'total-row balance-row', [
+          el('td', '', t('doc.bookingBalance')),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', money(bookingBalance(totals.b2c), state.meta.currency))
         ]));
       }
       table.appendChild(tbody);
