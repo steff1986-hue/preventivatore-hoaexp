@@ -1479,11 +1479,11 @@
         closing: { it: 'Il team HOAEXP resta a disposizione per adattare la proposta prima della conferma definitiva.', en: 'The HOAEXP team remains available to refine the proposal before final confirmation.' }
       },
       highlights: [
-        { it: 'Itinerario privato con guida dedicata.', en: 'Private itinerary with dedicated guide.', imageData: '' },
-        { it: 'Lodge selezionati in base a posizione, qualità e continuità logistica.', en: 'Lodges selected for location, quality and logistical flow.', imageData: '' },
-        { it: 'Momenti iconici tra wildlife, paesaggi e lodge selezionati.', en: 'Iconic moments blending wildlife, landscapes and selected lodges.', imageData: '' },
-        { it: 'Ritmo di viaggio studiato per massimizzare l’esperienza senza stress.', en: 'Travel pacing designed to maximise the experience without stress.', imageData: '' },
-        { it: 'Documento utilizzabile sia per vendita diretta sia per rete partner.', en: 'Document suitable for direct sales and partner distribution.', imageData: '' }
+        { it: 'Itinerario privato con guida dedicata.', en: 'Private itinerary with dedicated guide.', fomo: { it: 'Le guide migliori e i lodge più richiesti hanno disponibilità limitata.', en: 'The best guides and most requested lodges have limited availability.' }, imageData: '' },
+        { it: 'Lodge selezionati in base a posizione, qualità e continuità logistica.', en: 'Lodges selected for location, quality and logistical flow.', fomo: { it: 'Le camere nei lodge più iconici si esauriscono con largo anticipo.', en: 'Rooms in the most iconic lodges sell out well in advance.' }, imageData: '' },
+        { it: 'Momenti iconici tra wildlife, paesaggi e lodge selezionati.', en: 'Iconic moments blending wildlife, landscapes and selected lodges.', fomo: { it: 'Il timing giusto può trasformare un incontro wildlife in un ricordo irripetibile.', en: 'The right timing can turn a wildlife encounter into a once-in-a-lifetime memory.' }, imageData: '' },
+        { it: 'Ritmo di viaggio studiato per massimizzare l’esperienza senza stress.', en: 'Travel pacing designed to maximise the experience without stress.', fomo: { it: 'Un ritmo ben studiato evita compromessi e lascia spazio alla meraviglia.', en: 'A well-designed pace avoids compromises and leaves room for wonder.' }, imageData: '' },
+        { it: 'Documento utilizzabile sia per vendita diretta sia per rete partner.', en: 'Document suitable for direct sales and partner distribution.', fomo: { it: 'Le condizioni migliori vanno bloccate prima della riconferma fornitori.', en: 'The best conditions should be secured before supplier reconfirmation.' }, imageData: '' }
       ],
       itinerary: [
         { day: 1, title: { it: 'Arrivo e briefing operativo', en: 'Arrival and operational briefing' }, location: 'Arusha', meals: 'Dinner', description: { it: 'Accoglienza all’arrivo, trasferimento privato e briefing sul programma di viaggio.', en: 'Arrival assistance, private transfer and briefing on the travel programme.' } },
@@ -1516,6 +1516,14 @@
     let state = loadState();
     let currentStep = 0;
 
+    const DEFAULT_HIGHLIGHT_FOMO = [
+      { it: 'Le guide migliori e i lodge più richiesti hanno disponibilità limitata.', en: 'The best guides and most requested lodges have limited availability.' },
+      { it: 'Le camere nei lodge più iconici si esauriscono con largo anticipo.', en: 'Rooms in the most iconic lodges sell out well in advance.' },
+      { it: 'Il timing giusto può trasformare un incontro wildlife in un ricordo irripetibile.', en: 'The right timing can turn a wildlife encounter into a once-in-a-lifetime memory.' },
+      { it: 'Un ritmo ben studiato evita compromessi e lascia spazio alla meraviglia.', en: 'A well-designed pace avoids compromises and leaves room for wonder.' },
+      { it: 'Le condizioni migliori vanno bloccate prima della riconferma fornitori.', en: 'The best conditions should be secured before supplier reconfirmation.' }
+    ];
+
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
@@ -1543,6 +1551,20 @@
       state.options.footer.it = 'HOAEXP L.L.C-FZ - TIN/VAT Number: 104762263200003 - reservations@hoaexp.com - www.hoaexp.com';
       state.options.footer.en = 'HOAEXP L.L.C-FZ - TIN/VAT Number: 104762263200003 - reservations@hoaexp.com - www.hoaexp.com';
       state.prices.forEach(row => { if (!ALLOWED_CURRENCIES.includes(row.currency)) row.currency = state.meta.currency; });
+      normalizeHighlights();
+    }
+
+    function normalizeHighlights() {
+      if (!Array.isArray(state.highlights)) state.highlights = [];
+      state.highlights = state.highlights.slice(0, 5).map((item, index) => {
+        const fallback = DEFAULT_HIGHLIGHT_FOMO[index] || DEFAULT_HIGHLIGHT_FOMO[0];
+        const normalized = item && typeof item === 'object' ? item : { it: '', en: '' };
+        if (!normalized.fomo || typeof normalized.fomo !== 'object') normalized.fomo = { it: fallback.it, en: fallback.en };
+        if (!normalized.fomo.it) normalized.fomo.it = fallback.it;
+        if (!normalized.fomo.en) normalized.fomo.en = fallback.en;
+        if (typeof normalized.imageData !== 'string') normalized.imageData = '';
+        return normalized;
+      });
     }
 
     function bindFixedReadonlyFields() {
@@ -1724,11 +1746,22 @@
         }
 
         const fields = el('div', 'highlight-editor-fields', []);
+        fields.appendChild(el('div', 'highlight-help', currentLang() === 'en' ? 'Main highlight line' : 'Testo principale highlight'));
         const textInput = document.createElement('input');
         textInput.value = item[currentLang()] || '';
         textInput.dataset.highlightIndex = String(index);
+        textInput.placeholder = currentLang() === 'en' ? 'Main promise / experience' : 'Promessa principale / esperienza';
         textInput.setAttribute('aria-label', `Highlight ${index + 1}`);
         fields.appendChild(textInput);
+
+        fields.appendChild(el('div', 'highlight-help', currentLang() === 'en' ? 'FOMO / urgency line shown below the highlight' : 'Seconda riga FOMO / urgenza mostrata sotto l’highlight'));
+        const fomoInput = document.createElement('textarea');
+        fomoInput.rows = 2;
+        fomoInput.value = (item.fomo && item.fomo[currentLang()]) || '';
+        fomoInput.dataset.highlightFomoIndex = String(index);
+        fomoInput.placeholder = currentLang() === 'en' ? 'Limited by season, wildlife timing and lodge availability.' : 'Valorizzato da stagionalità, timing wildlife e disponibilità lodge.';
+        fomoInput.setAttribute('aria-label', `Highlight ${index + 1} FOMO`);
+        fields.appendChild(fomoInput);
 
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -1752,6 +1785,12 @@
         list.appendChild(card);
       });
       $$('[data-highlight-index]').forEach(input => input.addEventListener('input', () => { state.highlights[Number(input.dataset.highlightIndex)][currentLang()] = input.value; changed(); }));
+      $$('[data-highlight-fomo-index]').forEach(input => input.addEventListener('input', () => {
+        const index = Number(input.dataset.highlightFomoIndex);
+        if (!state.highlights[index].fomo || typeof state.highlights[index].fomo !== 'object') state.highlights[index].fomo = { it: '', en: '' };
+        state.highlights[index].fomo[currentLang()] = input.value;
+        changed();
+      }));
       $$('[data-remove-highlight]').forEach(btn => btn.addEventListener('click', () => { state.highlights.splice(Number(btn.dataset.removeHighlight), 1); render(); }));
       $$('[data-highlight-image-index]').forEach(input => input.addEventListener('change', handleHighlightImageUpload));
       const addBtn = $('#addHighlightBtn');
@@ -1991,6 +2030,7 @@
         const activeHighlights = state.highlights
           .map((item, index) => ({
             text: item[currentLang()] || item.it || item.en || '',
+            fomo: (item.fomo && (item.fomo[currentLang()] || item.fomo.it || item.fomo.en)) || ((DEFAULT_HIGHLIGHT_FOMO[index] || DEFAULT_HIGHLIGHT_FOMO[0])[currentLang()]),
             imageData: item.imageData || '',
             index
           }))
@@ -2002,8 +2042,8 @@
             el('p', 'story-kicker', currentLang() === 'en' ? 'A journey designed to stay with you forever' : 'Un viaggio pensato per restarti dentro per sempre'),
             el('h3', '', t('doc.intro')),
             el('p', 'story-emphasis', currentLang() === 'en'
-              ? 'A visually led page designed to project atmosphere, exclusivity and urgency around the journey.'
-              : 'Una pagina costruita per trasmettere atmosfera, esclusività e desiderabilità del viaggio fin dal primo sguardo.'),
+              ? 'This is not just an itinerary: it is a curated window of seasonal wildlife, selected lodges and limited availability that should be secured before the best options disappear.'
+              : 'Non è solo un itinerario: è una finestra selezionata di wildlife stagionale, lodge scelti e disponibilità limitate da bloccare prima che le migliori opzioni vadano esaurite.'),
             ...(introChunks.length ? introChunks.map(chunk => el('p', 'doc-flow', chunk)) : [paragraph(t('doc.noData'))])
           ]),
           el('div', 'highlight-panel', [
@@ -2026,7 +2066,7 @@
                   li.appendChild(el('div', 'highlight-copy-wrap', [
                     el('span', 'highlight-index', String(index + 1).padStart(2, '0')),
                     el('div', 'highlight-copy', item.text),
-                    el('div', 'highlight-fomo', currentLang() === 'en' ? 'Limited by season, wildlife timing and lodge availability.' : 'Valorizzato da stagionalità, timing wildlife e disponibilità lodge.')
+                    el('div', 'highlight-fomo', item.fomo)
                   ]));
                   return li;
                 }))
@@ -2377,7 +2417,8 @@
 
     function addHighlight() {
       if (state.highlights.length >= 5) return;
-      state.highlights.push({ it: '', en: '', imageData: '' });
+      const fallback = DEFAULT_HIGHLIGHT_FOMO[state.highlights.length] || DEFAULT_HIGHLIGHT_FOMO[0];
+      state.highlights.push({ it: '', en: '', fomo: { it: fallback.it, en: fallback.en }, imageData: '' });
       render();
     }
     function addDay() {
@@ -2509,8 +2550,8 @@
       const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
       pdf.setProperties({ title: localized('trip.title') || 'HOAEXP Quote', subject: state.meta.quoteNo || 'Quote', author: HOAEXP_FIXED.company, creator: 'HOAEXP Quote Generator' });
       for (let i = 0; i < pages.length; i += 1) {
-        const canvas = await window.html2canvas(pages[i], { scale: 2.25, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', windowWidth: pages[i].scrollWidth, windowHeight: pages[i].scrollHeight });
-        const imgData = canvas.toDataURL('image/jpeg', 0.96);
+        const canvas = await window.html2canvas(pages[i], { scale: 3, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', windowWidth: pages[i].scrollWidth, windowHeight: pages[i].scrollHeight, logging: false, imageTimeout: 0 });
+        const imgData = canvas.toDataURL('image/jpeg', 0.99);
         if (i > 0) pdf.addPage();
         pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'SLOW');
         canvas.width = 1;
