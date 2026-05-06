@@ -228,6 +228,7 @@
     .doc-table td { border-bottom: 1px solid #ded4c4; padding: 6px; vertical-align: top; }
     .doc-table .right { text-align: right; white-space: nowrap; }
     .total-row td { font-weight: 700; background: rgba(251, 247, 239, .94); }
+    .deposit-row td { background: rgba(251, 247, 239, .82); }
     .muted { color: #6b665d !important; }
     .doc-pre { white-space: pre-line; margin: 0 0 8px; font-size: 8.8pt; }
     .doc-flow { margin: 0 0 7px; break-inside: avoid; page-break-inside: avoid; }
@@ -965,6 +966,121 @@
     }
     @page { size: A4; margin: 0; }
 
+
+    /* HOAEXP v12: renderer quality and cross-workflow cover alignment */
+    .quote-page,
+    .quote-page * {
+      text-rendering: geometricPrecision;
+      -webkit-font-smoothing: antialiased;
+      font-kerning: normal;
+    }
+    .doc-section p,
+    .doc-flow,
+    .doc-pre,
+    .itinerary-day,
+    .itinerary-day p,
+    .terms-block,
+    .terms-block .doc-pre,
+    .doc-table td,
+    .doc-table th,
+    .party-card p,
+    .advisor-card p,
+    .client-note-card p {
+      letter-spacing: normal !important;
+      word-spacing: .035em !important;
+    }
+    .quote-page.cover-page .doc-top {
+      margin-bottom: 4.2mm !important;
+      padding-bottom: 3.4mm !important;
+    }
+    .quote-page.cover-page .doc-hero {
+      padding-bottom: 4.2mm !important;
+      margin-bottom: 3.6mm !important;
+    }
+    .quote-page.cover-page .doc-title {
+      font-size: 22pt !important;
+      line-height: 1.02 !important;
+      margin-bottom: 2.2mm !important;
+      max-width: 154mm !important;
+    }
+    .quote-page.cover-page .doc-subtitle {
+      font-size: 9.7pt !important;
+      line-height: 1.28 !important;
+    }
+    .quote-page.cover-page .doc-facts {
+      gap: 6px !important;
+      margin-top: 4mm !important;
+    }
+    .quote-page.cover-page .doc-fact {
+      padding: 6px 7px !important;
+      min-height: 22mm !important;
+    }
+    .quote-page.cover-page .doc-fact strong {
+      font-size: 8.1pt !important;
+      line-height: 1.22 !important;
+    }
+    .quote-page.cover-page .doc-section {
+      margin-top: 3.8mm !important;
+    }
+    .quote-page.cover-page .party-card,
+    .quote-page.cover-page .advisor-card {
+      padding: 8px 10px !important;
+      min-height: 24mm !important;
+      border-radius: 12px !important;
+    }
+    .quote-page.cover-page .party-card h4,
+    .quote-page.cover-page .advisor-card h4 {
+      margin-bottom: 4px !important;
+      font-size: 8.5pt !important;
+    }
+    .quote-page.cover-page .party-card p,
+    .quote-page.cover-page .advisor-card p {
+      margin: 1px 0 !important;
+      font-size: 7.9pt !important;
+      line-height: 1.26 !important;
+    }
+    .quote-page.cover-page .advisor-kicker {
+      margin-bottom: 2px !important;
+      font-size: 6.6pt !important;
+      letter-spacing: .12em !important;
+    }
+    .quote-page.cover-page .advisor-company {
+      margin-bottom: 4px !important;
+      font-size: 7.9pt !important;
+    }
+    .quote-page.cover-page .advisor-contact-list {
+      gap: 1px !important;
+      margin-top: 3px !important;
+    }
+    .quote-page.cover-page .client-note-card {
+      margin-top: 0 !important;
+      padding: 4.4mm 5.2mm !important;
+      border-radius: 13px !important;
+      max-height: 27mm !important;
+      overflow: hidden !important;
+    }
+    .quote-page.cover-page .client-note-card h4 {
+      margin-bottom: 1.6mm !important;
+      font-size: 9.2pt !important;
+      letter-spacing: .07em !important;
+    }
+    .quote-page.cover-page .client-note-card p {
+      font-size: 7.9pt !important;
+      line-height: 1.26 !important;
+      margin-bottom: 0 !important;
+    }
+    .quote-page.cover-page .cover-note-section {
+      margin-top: 3mm !important;
+    }
+    .quote-page.cover-page .cover-note-section.is-compact .client-note-card {
+      padding: 3.5mm 4.5mm !important;
+      max-height: 22mm !important;
+    }
+    .quote-page.cover-page .cover-note-section.is-compact .client-note-card p {
+      font-size: 7.45pt !important;
+      line-height: 1.18 !important;
+    }
+
   </style>
 </head>
 <body>
@@ -1239,7 +1355,7 @@
         },
         preview: { title: 'Anteprima documento' },
         doc: {
-          quote: 'Preventivo', issueDate: 'Emissione', validUntil: 'Valido fino al', preparedBy: 'Preparato da', destination: 'Destinazione', dates: 'Date', duration: 'Durata', travelers: 'Viaggiatori', style: 'Stile', sender: 'Emittente', recipient: 'Destinatario', client: 'Cliente finale', partner: 'Partner', intro: 'Introduzione', highlights: 'Highlights del viaggio', itinerary: 'Itinerario sintetico', services: 'Servizi inclusi / esclusi', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', clientNotes: 'Note per il cliente', pricing: 'Proposta economica', terms: 'Condizioni', payment: 'Pagamento', cancellation: 'Cancellazione', validity: 'Validità', booking: 'Booking', total: 'Totale', unit: 'Unità', qty: 'Qtà', amount: 'Importo', item: 'Voce', taxNote: 'Nota', insurance: 'Assicurazione viaggio', bookingRequirements: 'Per prenotare', b2bCopy: 'Copia uso interno', clientCopy: 'Copia cliente', b2bLabel: 'Prezzo partner', b2cLabel: 'Prezzo cliente', internalLabel: 'Costo interno', margin: 'Margine lordo stimato', advisorB2bCopy: 'Copia B2B agente', confidential: 'Confidenziale - uso interno/partner', publicDoc: 'Documento cliente', noData: 'Non specificato'
+          quote: 'Preventivo', issueDate: 'Emissione', validUntil: 'Valido fino al', preparedBy: 'Preparato da', destination: 'Destinazione', dates: 'Date', duration: 'Durata', travelers: 'Viaggiatori', style: 'Stile', sender: 'Emittente', recipient: 'Destinatario', client: 'Cliente finale', partner: 'Partner', intro: 'Introduzione', highlights: 'Highlights del viaggio', itinerary: 'Itinerario sintetico', services: 'Servizi inclusi / esclusi', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', clientNotes: 'Note per il cliente', pricing: 'Proposta economica', terms: 'Condizioni', payment: 'Pagamento', cancellation: 'Cancellazione', validity: 'Validità', booking: 'Booking', total: 'Totale', unit: 'Unità', qty: 'Qtà', amount: 'Importo', item: 'Voce', taxNote: 'Nota', insurance: 'Assicurazione viaggio', bookingRequirements: 'Per prenotare', bookingDeposit: 'ACCONTO NECESSARIO PER LA PRENOTAZIONE (30%)', b2bCopy: 'Copia uso interno', clientCopy: 'Copia cliente', b2bLabel: 'Prezzo partner', b2cLabel: 'Prezzo cliente', internalLabel: 'Costo interno', margin: 'Margine lordo stimato', advisorB2bCopy: 'Copia B2B agente', confidential: 'Confidenziale - uso interno/partner', publicDoc: 'Documento cliente', noData: 'Non specificato'
         }
       },
       en: {
@@ -1287,7 +1403,7 @@
         },
         preview: { title: 'Document preview' },
         doc: {
-          quote: 'Quote', issueDate: 'Issue date', validUntil: 'Valid until', preparedBy: 'Prepared by', destination: 'Destination', dates: 'Dates', duration: 'Duration', travelers: 'Travelers', style: 'Style', sender: 'Sender', recipient: 'Recipient', client: 'Final client', partner: 'Partner', intro: 'Introduction', highlights: 'Trip highlights', itinerary: 'Itinerary overview', services: 'Included / excluded services', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', clientNotes: 'Client notes', pricing: 'Commercial proposal', terms: 'Terms', payment: 'Payment', cancellation: 'Cancellation', validity: 'Validity', booking: 'Booking', total: 'Total', unit: 'Unit', qty: 'Qty', amount: 'Amount', item: 'Item', taxNote: 'Note', insurance: 'Travel insurance', bookingRequirements: 'To book', b2bCopy: 'Internal copy', clientCopy: 'Client copy', b2bLabel: 'Partner price', b2cLabel: 'Client price', internalLabel: 'Internal cost', margin: 'Estimated gross margin', advisorB2bCopy: 'Advisor B2B copy', confidential: 'Confidential - internal/partner use', publicDoc: 'Client document', noData: 'Not specified'
+          quote: 'Quote', issueDate: 'Issue date', validUntil: 'Valid until', preparedBy: 'Prepared by', destination: 'Destination', dates: 'Dates', duration: 'Duration', travelers: 'Travelers', style: 'Style', sender: 'Sender', recipient: 'Recipient', client: 'Final client', partner: 'Partner', intro: 'Introduction', highlights: 'Trip highlights', itinerary: 'Itinerary overview', services: 'Included / excluded services', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', clientNotes: 'Client notes', pricing: 'Commercial proposal', terms: 'Terms', payment: 'Payment', cancellation: 'Cancellation', validity: 'Validity', booking: 'Booking', total: 'Total', unit: 'Unit', qty: 'Qty', amount: 'Amount', item: 'Item', taxNote: 'Note', insurance: 'Travel insurance', bookingRequirements: 'To book', bookingDeposit: 'DEPOSIT REQUIRED TO CONFIRM THE BOOKING (30%)', b2bCopy: 'Internal copy', clientCopy: 'Client copy', b2bLabel: 'Partner price', b2cLabel: 'Client price', internalLabel: 'Internal cost', margin: 'Estimated gross margin', advisorB2bCopy: 'Advisor B2B copy', confidential: 'Confidential - internal/partner use', publicDoc: 'Client document', noData: 'Not specified'
         }
       }
     };
@@ -1755,6 +1871,7 @@
         <div class="total-line"><span>${escapeHtml(t('doc.internalLabel'))}</span><strong>${escapeHtml(money(totals.internal, state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.b2bLabel'))}</span><strong>${escapeHtml(money(totals.b2b, state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.b2cLabel'))}</span><strong>${escapeHtml(money(totals.b2c, state.meta.currency))}</strong></div>
+        <div class="total-line"><span>${escapeHtml(t('doc.bookingDeposit'))}</span><strong>${escapeHtml(money(bookingDeposit(totals.b2c), state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.margin'))}</span><strong>${escapeHtml(money(totals.margin, state.meta.currency))}</strong></div>
       `;
     }
@@ -1767,6 +1884,11 @@
         acc.b2c += qty * Number(row.b2c || 0);
         return acc;
       }, { internal: 0, b2b: 0, b2c: 0, get margin() { return this.b2b - this.internal; } });
+    }
+
+    function bookingDeposit(total) {
+      const base = Math.max(0, Number(total || 0));
+      return Math.ceil((base * 0.30) / 10) * 10;
     }
 
     function selectedPriceKey() { return state.settings.workflow === 'b2b' ? 'b2b' : 'b2c'; }
@@ -1794,6 +1916,7 @@
       const sender = senderParty();
       const recipient = documentRecipient(mode);
       let current = createQuotePage(doc);
+      current.page.classList.add('cover-page');
 
       const pageOverflow = () => current.page.scrollHeight > current.page.clientHeight + 2;
       const startNewPage = className => {
@@ -1947,12 +2070,14 @@
       ]));
 
       if (nonEmpty(localized('client.notes'))) {
-        append(el('section', 'doc-section', [
-          el('div', 'client-note-card', [
+        const coverNote = el('section', 'doc-section cover-note-section', [
+          el('div', 'client-note-card cover-client-note', [
             el('h4', '', t('doc.clientNotes')),
             ...splitTextChunks(localized('client.notes'), 780).map(chunk => el('p', '', chunk))
           ])
-        ]));
+        ]);
+        current.content.appendChild(coverNote);
+        if (pageOverflow()) coverNote.classList.add('is-compact');
       }
 
       forceNewPage('intro-page');
@@ -2168,6 +2293,14 @@
           el('td', 'right', money(totals.b2b, state.meta.currency)),
           el('td', 'right', money(totals.b2c, state.meta.currency))
         ]));
+        tbody.appendChild(el('tr', 'total-row deposit-row', [
+          el('td', '', t('doc.bookingDeposit')),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', money(bookingDeposit(totals.b2b), state.meta.currency)),
+          el('td', 'right', money(bookingDeposit(totals.b2c), state.meta.currency))
+        ]));
         tbody.appendChild(el('tr', '', [
           el('td', '', t('doc.margin')),
           el('td', 'right', ''),
@@ -2183,12 +2316,24 @@
           el('td', 'right', ''),
           el('td', 'right', money(totals.b2b, state.meta.currency))
         ]));
+        tbody.appendChild(el('tr', 'total-row deposit-row', [
+          el('td', '', t('doc.bookingDeposit')),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', money(bookingDeposit(totals.b2b), state.meta.currency))
+        ]));
       } else {
         tbody.appendChild(el('tr', 'total-row', [
           el('td', '', t('doc.total')),
           el('td', 'right', ''),
           el('td', 'right', ''),
           el('td', 'right', money(totals.b2c, state.meta.currency))
+        ]));
+        tbody.appendChild(el('tr', 'total-row deposit-row', [
+          el('td', '', t('doc.bookingDeposit')),
+          el('td', 'right', ''),
+          el('td', 'right', ''),
+          el('td', 'right', money(bookingDeposit(totals.b2c), state.meta.currency))
         ]));
       }
       table.appendChild(tbody);
@@ -2337,10 +2482,10 @@
       const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
       pdf.setProperties({ title: localized('trip.title') || 'HOAEXP Quote', subject: state.meta.quoteNo || 'Quote', author: HOAEXP_FIXED.company, creator: 'HOAEXP Quote Generator' });
       for (let i = 0; i < pages.length; i += 1) {
-        const canvas = await window.html2canvas(pages[i], { scale: 1.65, useCORS: true, backgroundColor: '#ffffff', windowWidth: pages[i].scrollWidth, windowHeight: pages[i].scrollHeight });
-        const imgData = canvas.toDataURL('image/jpeg', 0.88);
+        const canvas = await window.html2canvas(pages[i], { scale: 2.25, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', windowWidth: pages[i].scrollWidth, windowHeight: pages[i].scrollHeight });
+        const imgData = canvas.toDataURL('image/jpeg', 0.96);
         if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'SLOW');
         canvas.width = 1;
         canvas.height = 1;
       }
