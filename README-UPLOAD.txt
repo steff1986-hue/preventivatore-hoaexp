@@ -1,16 +1,4 @@
-HOAEXP Preventivatore - v41 Step 5
+HOAEXP Preventivatore v44 Archive UX
 
-Caricare tutti i file di questa cartella nella root del repository GitHub Pages.
-
-File inclusi:
-- index.html
-- CNAME
-- .nojekyll
-- robots.txt
-- SECURITY-GO-LIVE.txt
-- MANAGEMENT-STEP5.txt
-
-Note operative:
-- Questa versione mantiene noindex/nofollow/noarchive/nosnippet.
-- GitHub Pages resta un ambiente pubblico: usare solo per test controllati.
-- Prima dell'uso operativo reale con rete agenti, attivare accesso protetto tramite Cloudflare Access, Vercel/Netlify protection o login D1OS.
+Caricare tutti i file nella root del repository GitHub Pages, sostituendo index.html.
+Dominio custom: preventivatore.africa-safari.it

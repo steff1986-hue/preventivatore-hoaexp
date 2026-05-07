@@ -1,0 +1,1 @@
+v44: archivio locale preventivi generati. I PDF generati salvano automaticamente una copia JSON leggera senza immagini incorporate. Numerazione progressiva locale HOA-YYYY-### basata sui preventivi generati salvati nel browser. Pulsante Archivio preventivi nella dashboard.
