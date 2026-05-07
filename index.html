@@ -6465,11 +6465,56 @@
     }
 
     function catalogExtraTemboTransferLegs() {
-      return state.catalog && state.catalog.extraDarPlacement === 'both' ? 2 : 1;
+      if (!state.catalog || !state.catalog.extraDarNight) return 0;
+      const placement = state.catalog.extraDarPlacement || 'before';
+      if (placement === 'both') return 2;
+      if (placement === 'before' || placement === 'after') return 1;
+      return 0;
     }
 
     function hasCatalogTemboTransfer(product = selectedCatalogProduct()) {
-      return Boolean(product && product.extraHotelEnabled !== false && state.catalog && state.catalog.extraDarNight && catalogExtraHotel(product).id === 'tembo');
+      return Boolean(product && product.extraHotelEnabled !== false && state.catalog && state.catalog.mode === 'catalog' && state.catalog.extraDarNight && catalogExtraHotel(product).id === 'tembo' && catalogExtraTemboTransferLegs() > 0);
+    }
+
+    function isTemboTransferRow(row) {
+      if (!row || typeof row !== 'object') return false;
+      if (row.autoType === 'temboTransfer') return true;
+      const label = [row.label && row.label.it, row.label && row.label.en].filter(Boolean).join(' ').trim().toLowerCase();
+      return /^(trasferimento|transfer|airport|aeroporto)/.test(label) && /tembo/.test(label) && /(aeroporto|airport)/.test(label);
+    }
+
+    function isCatalogExtraHotelPriceRow(row) {
+      if (!row || typeof row !== 'object') return false;
+      if (row.autoType === 'catalogExtraHotelNight') return true;
+      const label = [row.label && row.label.it, row.label && row.label.en].filter(Boolean).join(' ').toLowerCase();
+      return /(notte extra|extra night)/.test(label) && /(tembo|blue sapphire|hotel)/.test(label);
+    }
+
+    function temboTransferRows() {
+      const product = selectedCatalogProduct();
+      if (!hasCatalogTemboTransfer(product)) return [];
+      const legs = Math.min(2, catalogExtraTemboTransferLegs());
+      if (legs <= 0) return [];
+      const transfer = temboTransferRate(state.meta.currency);
+      const placement = state.catalog.extraDarPlacement || 'before';
+      const directionIt = placement === 'after' ? 'Tembo Hotel - aeroporto' : placement === 'both' ? 'aeroporto - Tembo Hotel / Tembo Hotel - aeroporto' : 'aeroporto - Tembo Hotel';
+      const directionEn = placement === 'after' ? 'Tembo Hotel - airport' : placement === 'both' ? 'airport - Tembo Hotel / Tembo Hotel - airport' : 'airport - Tembo Hotel';
+      return [{
+        autoType: 'temboTransfer',
+        label: {
+          it: `Trasferimento ${directionIt}`,
+          en: `Transfer ${directionEn}`
+        },
+        qty: legs,
+        currency: transfer.currency,
+        internal: transfer.rate,
+        b2b: transfer.rate,
+        b2c: transfer.rate,
+        notes: {
+          it: `Voce automatica Tembo Hotel. ${placement === 'both' ? 'Pre e post safari: massimo 2 tratte calcolate.' : 'Una tratta calcolata in base alla posizione della notte extra.'} Tariffa: ${temboTransferTariffText('it')}.`,
+          en: `Automatic Tembo Hotel item. ${placement === 'both' ? 'Pre and post safari: maximum 2 transfer legs calculated.' : 'One transfer leg calculated from the extra-night position.'} Rate: ${temboTransferTariffText('en')}.`
+        }
+      }];
     }
 
     function renderCatalogConfigurator() {
@@ -6553,17 +6598,19 @@
             state.catalog.area = catalogAreaForProduct(selectedCatalogProduct());
             resetCatalogProductOptions(selectedCatalogProduct());
           }
+          if (['extraDarPlacement', 'extraDarRoomId', 'extraDarQty'].includes(key)) syncCatalogExtraHotelSelection();
           render();
         });
         node.addEventListener('input', () => {
           if (!['catalogAdults', 'catalogChildren', 'catalogExtraDarQty'].includes(id)) return;
           const keyMap = { catalogAdults: 'adults', catalogChildren: 'children', catalogExtraDarQty: 'extraDarQty' };
           state.catalog[keyMap[id]] = Number(node.value || 0);
+          if (id === 'catalogExtraDarQty') syncCatalogExtraHotelSelection();
           changed();
         });
       });
       const extra = $('#catalogExtraDarNight');
-      if (extra) extra.addEventListener('change', () => { state.catalog.extraDarNight = extra.checked; render(); });
+      if (extra) extra.addEventListener('change', () => { state.catalog.extraDarNight = extra.checked; syncCatalogExtraHotelSelection(); render(); });
       const apply = $('#applyCatalogBtn');
       if (apply) apply.addEventListener('click', applyCatalogProduct);
     }
@@ -6645,6 +6692,7 @@
         const nights = catalog.extraDarPlacement === 'both' ? 2 : 1;
         const rooms = Math.max(1, Number(catalog.extraDarQty || 1));
         rows.push({
+          autoType: 'catalogExtraHotelNight',
           label: {
             it: `${hotel.labelIt} - ${room.label} (${catalogExtraNightPlacementLabel(catalog.extraDarPlacement)})`,
             en: `${hotel.labelEn} - ${room.label} (${catalogExtraNightPlacementLabel(catalog.extraDarPlacement)})`
@@ -6663,6 +6711,7 @@
           const transfer = temboTransferRate('EUR');
           const legs = catalogExtraTemboTransferLegs();
           rows.push({
+            autoType: 'temboTransfer',
             label: {
               it: `Trasferimento aeroporto - Tembo Hotel (${catalogExtraNightPlacementLabel(catalog.extraDarPlacement)})`,
               en: `Airport - Tembo Hotel transfer (${catalogExtraNightPlacementLabel(catalog.extraDarPlacement)})`
@@ -6688,6 +6737,8 @@
       const room = catalogExtraRoom(product);
       const isAfter = placement === 'after';
       return {
+        autoType: 'catalogExtraHotelNight',
+        autoPlacement: placement,
         day: 0,
         title: {
           it: `${isAfter ? 'Notte extra post safari' : 'Notte extra pre safari'} - ${hotel.shortName}`,
@@ -6700,6 +6751,47 @@
           en: `${hotel.descriptionEn} Selected room: ${room.label}.${hotel.id === 'tembo' ? ' Airport - Tembo Hotel transfer calculated separately per one-way transfer.' : ''}`
         }
       };
+    }
+
+    function isCatalogExtraHotelItineraryDay(day) {
+      if (!day || typeof day !== 'object') return false;
+      if (day.autoType === 'catalogExtraHotelNight') return true;
+      const title = [day.title && day.title.it, day.title && day.title.en].filter(Boolean).join(' ').toLowerCase();
+      return /(notte extra|extra night)/.test(title) && /(tembo|blue sapphire|hotel)/.test(title);
+    }
+
+    function syncCatalogExtraHotelItinerary() {
+      if (!state.catalog || state.catalog.mode !== 'catalog') return;
+      const product = selectedCatalogProduct();
+      if (!product || product.extraHotelEnabled === false) return;
+      const baseDays = (state.itinerary || []).filter(day => !isCatalogExtraHotelItineraryDay(day));
+      const placement = state.catalog.extraDarPlacement || 'before';
+      let days = [...baseDays];
+      if (state.catalog.extraDarNight) {
+        if (placement === 'after') days = [...baseDays, buildExtraDarNightDay('after')];
+        else if (placement === 'both') days = [buildExtraDarNightDay('before'), ...baseDays, buildExtraDarNightDay('after')];
+        else days = [buildExtraDarNightDay('before'), ...baseDays];
+      }
+      state.itinerary = days;
+      renumberDays();
+    }
+
+    function syncCatalogExtraHotelPriceRows() {
+      if (!state.catalog || state.catalog.mode !== 'catalog') return;
+      const generatedRows = buildCatalogPriceRows().filter(row => isCatalogExtraHotelPriceRow(row) || isTemboTransferRow(row));
+      state.prices = (state.prices || []).filter(row => !isCatalogExtraHotelPriceRow(row) && !isTemboTransferRow(row));
+      if (state.catalog.extraDarNight) state.prices.push(...generatedRows);
+    }
+
+    function syncCatalogExtraHotelSelection() {
+      if (!state.catalog || state.catalog.mode !== 'catalog') return;
+      syncCatalogExtraHotelItinerary();
+      syncCatalogExtraHotelPriceRows();
+      const product = selectedCatalogProduct();
+      const extraNights = state.catalog.extraDarNight ? catalogExtraNightCount() : 0;
+      if (product) {
+        state.trip.nights = extraNights ? (currentLang() === 'en' ? `${localizedValue(product.duration)} + ${extraNights} extra hotel night${extraNights > 1 ? 's' : ''}` : `${localizedValue(product.duration)} + ${extraNights} notte extra hotel`) : localizedValue(product.duration);
+      }
     }
 
     function buildCatalogItinerary() {
@@ -7019,8 +7111,8 @@
     }
 
     function effectivePriceRows(baseRows = state.prices) {
-      const cleanRows = (baseRows || []).filter(row => !isManagementFeeRow(row));
-      return [...cleanRows, ...managementFeeRows()];
+      const cleanRows = (baseRows || []).filter(row => !isManagementFeeRow(row) && !isTemboTransferRow(row));
+      return [...cleanRows, ...temboTransferRows(), ...managementFeeRows()];
     }
 
     function renderTotals() {
