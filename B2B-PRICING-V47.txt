@@ -1,0 +1,10 @@
+HOAEXP Preventivatore v47 - Agent Pricing Scope
+
+Modifica applicata:
+- rimosso il blocco warning "Supplier net cost" / "Costo netto fornitore";
+- rimossi dalla dashboard i totali costo netto fornitore, margine HOAEXP e margine totale filiera;
+- rimossa la colonna costo netto fornitore dalla tabella interna/B2B;
+- rimossa la colonna margine HOAEXP dalla tabella interna/B2B;
+- mantenuti prezzo partner B2B, prezzo cliente B2C/prezzo consigliato e margine partner;
+- rimossa la voce costo netto dal form prezzi manuale;
+- mantenute tutte le logiche catalogo, PDF, archivio, sicurezza e audit.
