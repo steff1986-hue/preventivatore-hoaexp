@@ -1,0 +1,16 @@
+HOAEXP Preventivatore - Step 5 Management Stabilization
+
+Implementato:
+- catalog metadata runtime per ogni prodotto: product_id, catalog_version, rate_version, valid_from, valid_to, status, last_updated_by, last_updated_at
+- stati preventivo: draft, in_review, approved, sent, accepted, expired, cancelled
+- autosave con debounce
+- gestione errore localStorage pieno / quota exceeded
+- compressione immagini highlights piu' aggressiva
+- pulsante Rimuovi tutte le immagini
+- pulsante Salva bozza leggera, con export JSON senza immagini incorporate
+- import JSON con riepilogo prima dell'applicazione
+- audit trail preventivo: quote_id, created_by, workflow, catalog_version, generated_at, pdf_client_hash, pdf_internal_hash
+- hash SHA-256 PDF cliente e PDF interno quando generati in browser compatibile
+
+Obiettivo:
+Base piu' stabile per test agenti e futura migrazione come motore canonico dentro D1OS.

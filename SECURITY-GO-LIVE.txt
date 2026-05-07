@@ -1,0 +1,16 @@
+HOAEXP Preventivatore - sicurezza go-live test
+
+Misure incluse:
+- meta robots noindex,nofollow,noarchive,nosnippet
+- meta googlebot noindex,nofollow,noarchive,nosnippet
+- robots.txt con Disallow: /
+- banner interno di ambiente test riservato
+- avviso obbligatorio su export/import JSON
+
+Limite noto:
+GitHub Pages non protegge realmente il file. Chi conosce il link puo' accedere all'app.
+
+Prima dell'uso operativo con agenti:
+1. Attivare Cloudflare Access, Vercel/Netlify protection o login D1OS.
+2. Evitare distribuzione su URL pubblico non protetto.
+3. Spostare in backend/server listini, margini, coordinate bancarie e logiche commerciali appena possibile.

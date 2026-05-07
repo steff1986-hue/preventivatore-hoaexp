@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="it" data-theme="light">
 <head>
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="HOAEXP quote generator for B2B and B2C travel proposals." />
-  <title>HOAEXP Quote Generator</title>
+<title>HOAEXP Quote Generator</title>
+  <!-- HOAEXP production v41 step 5: catalog versioning, quote statuses, autosave, image performance and audit trail -->
   <style>
     :root {
       --bg: #f5f1e8;
@@ -166,6 +169,8 @@
     .totals-box { border: 1px solid var(--line); background: var(--panel-2); border-radius: 16px; padding: 14px; display: grid; gap: 7px; }
     .total-line { display: flex; justify-content: space-between; gap: 12px; }
     .total-line strong { font-size: 1.05rem; }
+    .total-separator { border-top: 1px solid var(--line); padding-top: 7px; margin-top: 3px; }
+    .total-warning { border: 1px solid rgba(156, 79, 32, .35); background: rgba(156, 79, 32, .10); color: var(--warn); border-radius: 12px; padding: 9px 10px; font-size: .82rem; font-weight: 700; line-height: 1.35; }
 
     .preview-shell { padding: 16px; position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow: auto; }
     .preview-toolbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
@@ -604,6 +609,30 @@
       color: #5f5b53;
       position: relative;
       z-index: 1;
+    }
+    .advisor-note.internal-only {
+      padding: 2.2mm 2.6mm;
+      border: 1px solid rgba(164, 61, 36, .32);
+      border-radius: 10px;
+      background: rgba(164, 61, 36, .07);
+      color: #7c2e1c;
+      font-weight: 700;
+    }
+    .internal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      margin: 0 0 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(164, 61, 36, .12);
+      color: #8b2f1b;
+      border: 1px solid rgba(164, 61, 36, .24);
+      font-size: .68rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
     .intro-highlight-page {
       min-height: 205mm;
@@ -1575,6 +1604,194 @@
       }
     }
 
+  
+
+    /* HOAEXP v40 Step 4 - final pre-PDF checklist and advisor validations */
+    .btn.blocked {
+      border-color: var(--warn) !important;
+      box-shadow: 0 0 0 3px rgba(156, 79, 32, .12) !important;
+    }
+    .preflight-status {
+      margin-top: 14px;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.42);
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    [data-theme="dark"] .preflight-status { background: rgba(255,255,255,.05); }
+    .preflight-status strong { display: block; color: var(--text); margin-bottom: 4px; }
+    .preflight-status.ok { border-color: rgba(25,123,78,.38); }
+    .preflight-status.warn { border-color: rgba(156,79,32,.42); }
+    .preflight-status.blocked { border-color: rgba(164,61,36,.45); background: rgba(164,61,36,.08); }
+    .preflight-modal[hidden] { display: none !important; }
+    .preflight-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(10, 16, 16, .64);
+      backdrop-filter: blur(8px);
+    }
+    .preflight-box {
+      width: min(760px, 96vw);
+      max-height: 88vh;
+      overflow: auto;
+      border-radius: 22px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      color: var(--text);
+    }
+    .preflight-head {
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .preflight-head h3 { margin: 0 0 4px; font-size: 1.05rem; }
+    .preflight-head p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .preflight-close {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .preflight-body { padding: 16px 22px 20px; }
+    .preflight-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .preflight-pill {
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      background: rgba(127,111,87,.06);
+      font-size: .82rem;
+    }
+    .preflight-pill strong { display: block; font-size: 1.05rem; color: var(--text); }
+    .preflight-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .preflight-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.35);
+    }
+    [data-theme="dark"] .preflight-item { background: rgba(255,255,255,.04); }
+    .preflight-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: .78rem;
+    }
+    .preflight-item.ok .preflight-icon { background: rgba(25,123,78,.14); color: var(--ok); }
+    .preflight-item.warn .preflight-icon { background: rgba(156,79,32,.14); color: var(--warn); }
+    .preflight-item.blocker .preflight-icon { background: rgba(164,61,36,.14); color: var(--danger); }
+    .preflight-item strong { display: block; font-size: .9rem; }
+    .preflight-item small { display: block; margin-top: 2px; line-height: 1.35; color: var(--muted); }
+    .preflight-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 22px 20px;
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 760px) {
+      .preflight-summary { grid-template-columns: 1fr; }
+      .preflight-actions { flex-direction: column; }
+      .preflight-actions .btn { width: 100%; }
+    }
+
+    /* HOAEXP v41 Step 5: management stabilization, autosave and audit UX */
+    .storage-status {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border: 1px solid rgba(164, 61, 36, .42);
+      border-radius: 13px;
+      background: rgba(164, 61, 36, .08);
+      color: var(--danger);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .storage-status[hidden] { display: none !important; }
+    .management-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(214, 163, 93, .42);
+      background: rgba(214, 163, 93, .11);
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .02em;
+    }
+    .audit-summary {
+      margin-top: 12px;
+      padding: 10px 11px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.38);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    [data-theme="dark"] .audit-summary { background: rgba(255,255,255,.04); }
+    .audit-summary strong { color: var(--text); }
+    @media print {
+      .storage-status,
+      .management-pill,
+      .audit-summary { display: none !important; }
+    }
+
+
+    /* HOAEXP v40 Step 4: go-live test security hardening */
+    .security-test-notice {
+      margin-top: 12px;
+      padding: 10px 11px;
+      border: 1px solid rgba(182, 147, 74, .42);
+      border-radius: 14px;
+      background: rgba(182, 147, 74, .10);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .security-test-notice strong {
+      display: block;
+      color: var(--text);
+      font-size: 11px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .security-test-notice code {
+      font-size: 10px;
+      word-break: break-word;
+    }
+    @media print {
+      .security-test-notice { display: none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -1610,12 +1827,21 @@
       <div class="side-actions">
         <button class="btn primary" id="downloadPdfBtn" type="button" data-i18n="buttons.downloadPdf">Scarica PDF</button>
         <button class="btn" id="printBtn" type="button" data-i18n="buttons.print">Stampa / Salva PDF</button>
+        <button class="btn" id="preflightBtn" type="button" data-i18n="buttons.preflight">Controllo PDF definitivo</button>
         <button class="btn" id="exportJsonBtn" type="button" data-i18n="buttons.exportJson">Esporta JSON</button>
         <button class="btn" id="importJsonBtn" type="button" data-i18n="buttons.importJson">Importa JSON</button>
+        <button class="btn" id="removeImagesBtn" type="button" data-i18n="buttons.removeImages">Rimuovi tutte le immagini</button>
+        <button class="btn" id="saveLightDraftBtn" type="button" data-i18n="buttons.saveLightDraft">Salva bozza leggera</button>
         <button class="btn" id="demoBtn" type="button" data-i18n="buttons.demo">Carica demo</button>
         <button class="btn danger" id="resetBtn" type="button" data-i18n="buttons.reset">Reset</button>
       </div>
+      <div id="preflightStatus" class="preflight-status" aria-live="polite"></div>
       <input id="importFile" class="hidden-file" type="file" accept="application/json,.json" />
+      <div id="securityTestNotice" class="security-test-notice" aria-live="polite">
+        <strong>Ambiente test riservato</strong>
+        <span>URL pubblico non protetto: usare solo per test controllati. Per uso operativo con agenti attivare Cloudflare Access, Netlify/Vercel protection o login D1OS.</span>
+      </div>
+      <div id="storageStatus" class="storage-status" hidden></div>
       <p class="hint" data-i18n="app.storageNote">I dati vengono salvati automaticamente nel browser.</p>
     </aside>
 
@@ -1673,6 +1899,18 @@
                 <label for="validUntil" data-i18n="fields.validUntil">Valido fino al</label>
                 <input id="validUntil" type="date" data-bind="meta.validUntil" />
               </div>
+              <div class="field">
+                <label for="quoteStatus" data-i18n="fields.quoteStatus">Stato preventivo</label>
+                <select id="quoteStatus" data-bind="meta.status">
+                  <option value="draft">Bozza</option>
+                  <option value="in_review">In revisione</option>
+                  <option value="approved">Approvato</option>
+                  <option value="sent">Inviato</option>
+                  <option value="accepted">Accettato</option>
+                  <option value="expired">Scaduto</option>
+                  <option value="cancelled">Annullato</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1693,7 +1931,7 @@
               <div class="field"><label data-i18n="fields.contact" for="partnerContact">Referente</label><input id="partnerContact" data-bind="partner.contact" /></div>
               <div class="field"><label data-i18n="fields.email" for="partnerEmail">Email</label><input id="partnerEmail" data-bind="partner.email" /></div>
               <div class="field"><label data-i18n="fields.phone" for="partnerPhone">Telefono</label><input id="partnerPhone" data-bind="partner.phone" /></div>
-              <div class="field full"><label data-i18n="fields.partnerNote" for="partnerNote">Nota partner / commissione</label><textarea id="partnerNote" data-bind="partner.commissionNote"></textarea></div>
+              <div class="field full"><label data-i18n="fields.partnerNote" for="partnerNote">Nota interna partner / commissione - non visibile al cliente</label><span class="internal-badge" data-i18n="fields.internalUse">Uso interno</span><textarea id="partnerNote" data-bind="partner.commissionNote"></textarea></div>
             </div>
             <div class="section-title" data-i18n="sections.client">Cliente finale</div>
             <div class="form-grid">
@@ -1858,6 +2096,23 @@
     </main>
   </div>
 
+
+  <div id="preflightModal" class="preflight-modal" hidden>
+    <div class="preflight-box" role="dialog" aria-modal="true" aria-labelledby="preflightTitle">
+      <div class="preflight-head">
+        <div>
+          <h3 id="preflightTitle">Controllo prima di generare il PDF</h3>
+          <p id="preflightLead">Verifica automatica di dati, workflow, pricing e protezione dei dati interni.</p>
+        </div>
+        <button id="preflightCloseBtn" class="preflight-close" type="button" aria-label="Chiudi">×</button>
+      </div>
+      <div id="preflightBody" class="preflight-body"></div>
+      <div class="preflight-actions">
+        <button id="preflightCloseBtn2" class="btn" type="button">Chiudi</button>
+      </div>
+    </div>
+  </div>
+
   <div id="liveRegion" class="live" aria-live="polite"></div>
 
   <script>
@@ -1885,6 +2140,9 @@
           confirmReset: 'Vuoi cancellare tutti i dati del preventivo corrente?',
           demoLoaded: 'Demo caricata.',
           saved: 'Dati salvati.',
+          lightDraftSaved: 'Bozza leggera salvata ed esportata.',
+          imagesRemoved: 'Tutte le immagini highlight sono state rimosse.',
+          storageFull: 'Spazio locale pieno: rimuovi immagini o salva una bozza leggera.',
           imported: 'Preventivo importato.',
           pdfLoading: 'Preparazione PDF in corso...',
           pdfReady: 'PDF generato.',
@@ -1905,17 +2163,17 @@
           agent_client: ['Agente HOAEXP → Cliente finale', 'Preventivo B2C emesso dall’agente/agenzia partner verso il cliente.']
         },
         buttons: {
-          downloadPdf: 'Scarica PDF / copie', print: 'Scarica PDF B2B agente', exportJson: 'Esporta JSON', importJson: 'Importa JSON', demo: 'Carica demo', reset: 'Reset', prev: 'Indietro', next: 'Avanti', addHighlight: 'Aggiungi highlight', addDay: 'Aggiungi giorno', addDayBefore: 'Aggiungi prima', addDayAfter: 'Aggiungi dopo', addPrice: 'Aggiungi riga', applyCatalog: 'Applica prodotto catalogo', refresh: 'Aggiorna', remove: 'Rimuovi'
+          downloadPdf: 'Scarica PDF / copie', print: 'Scarica PDF B2B agente', preflight: 'Controllo PDF definitivo', exportJson: 'Esporta JSON', importJson: 'Importa JSON', demo: 'Carica demo', reset: 'Reset', prev: 'Indietro', next: 'Avanti', addHighlight: 'Aggiungi highlight', addDay: 'Aggiungi giorno', addDayBefore: 'Aggiungi prima', addDayAfter: 'Aggiungi dopo', addPrice: 'Aggiungi riga', applyCatalog: 'Applica prodotto catalogo', refresh: 'Aggiorna', remove: 'Rimuovi', removeImages: 'Rimuovi tutte le immagini', saveLightDraft: 'Salva bozza leggera'
         },
         fields: {
-          language: 'Lingua documento', theme: 'Tema interfaccia', quoteNo: 'Numero preventivo', baseCurrency: 'Valuta base', issueDate: 'Data emissione', validUntil: 'Valido fino al', company: 'Azienda', contact: 'Referente', email: 'Email', phone: 'Telefono', website: 'Sito web', vat: 'VAT / Tax ID', address: 'Indirizzo', partnerNote: 'Nota partner / commissione', clientNotes: 'Note per il cliente', developmentMode: 'Modalità sviluppo', developmentFree: 'Sviluppo autonomo', developmentCatalog: 'Prodotto da catalogo', catalogArea: 'Area safari', catalogNorth: 'Nord Tanzania - Serengeti e circuiti settentrionali', catalogSouth: 'Sud Tanzania - Nyerere / Selous', catalogProduct: 'Prodotto catalogo', catalogSeason: 'Periodo tariffario', catalogAdults: 'Adulti', catalogChildren: 'Bambini 2-11,99', extraDarNight: 'Notte extra hotel pre/post safari', extraNightPlacement: 'Posizione notte extra', extraNightBefore: 'Prima del safari', extraNightAfter: 'Dopo il safari', extraNightBoth: 'Prima e dopo il safari', extraDarRoom: 'Camera hotel extra', extraDarQty: 'Numero camere', name: 'Nome', country: 'Paese', tripTitle: 'Titolo viaggio', tripSubtitle: 'Sottotitolo', destination: 'Destinazione', travelDates: 'Date viaggio', nights: 'Durata', travelers: 'Viaggiatori', style: 'Stile viaggio', preparedBy: 'Preparato da', intro: 'Introduzione', closing: 'Messaggio di chiusura', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', payment: 'Condizioni pagamento', cancellation: 'Cancellazione', validity: 'Validità e disponibilità', bank: 'Coordinate bancarie / istruzioni booking', taxNote: 'Nota fiscale / commerciale', footer: 'Footer documento', insurance: 'Assicurazione viaggio', bookingRequirements: 'Dati per prenotare', rowTitle: 'Titolo riga', qty: 'Quantità', currency: 'Valuta', internal: 'Costo interno', b2b: 'Prezzo B2B', b2c: 'Prezzo B2C', day: 'Giorno', overnight: 'Pernottamento / area', meals: 'Pasti', description: 'Descrizione'
+          language: 'Lingua documento', theme: 'Tema interfaccia', quoteNo: 'Numero preventivo', baseCurrency: 'Valuta base', issueDate: 'Data emissione', validUntil: 'Valido fino al', quoteStatus: 'Stato preventivo', company: 'Azienda', contact: 'Referente', email: 'Email', phone: 'Telefono', website: 'Sito web', vat: 'VAT / Tax ID', address: 'Indirizzo', partnerNote: 'Nota interna partner / commissione - non visibile al cliente', internalUse: 'Uso interno', clientNotes: 'Note per il cliente', developmentMode: 'Modalità sviluppo', developmentFree: 'Sviluppo autonomo', developmentCatalog: 'Prodotto da catalogo', catalogArea: 'Area safari', catalogNorth: 'Nord Tanzania - Serengeti e circuiti settentrionali', catalogSouth: 'Sud Tanzania - Nyerere / Selous', catalogProduct: 'Prodotto catalogo', catalogSeason: 'Periodo tariffario', catalogAdults: 'Adulti', catalogChildren: 'Bambini 2-11,99', extraDarNight: 'Notte extra hotel pre/post safari', extraNightPlacement: 'Posizione notte extra', extraNightBefore: 'Prima del safari', extraNightAfter: 'Dopo il safari', extraNightBoth: 'Prima e dopo il safari', extraDarRoom: 'Camera hotel extra', extraDarQty: 'Numero camere', name: 'Nome', country: 'Paese', tripTitle: 'Titolo viaggio', tripSubtitle: 'Sottotitolo', destination: 'Destinazione', travelDates: 'Date viaggio', nights: 'Durata', travelers: 'Viaggiatori', style: 'Stile viaggio', preparedBy: 'Preparato da', intro: 'Introduzione', closing: 'Messaggio di chiusura', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', payment: 'Condizioni pagamento', cancellation: 'Cancellazione', validity: 'Validità e disponibilità', bank: 'Coordinate bancarie / istruzioni booking', taxNote: 'Nota fiscale / commerciale', footer: 'Footer documento', insurance: 'Assicurazione viaggio', bookingRequirements: 'Dati per prenotare', rowTitle: 'Titolo riga', qty: 'Quantità', currency: 'Valuta', internal: 'Costo netto fornitore', b2b: 'Prezzo partner B2B', b2c: 'Prezzo cliente B2C', day: 'Giorno', overnight: 'Pernottamento / area', meals: 'Pasti', description: 'Descrizione'
         },
         sections: {
           coreSettings: 'Impostazioni principali', sender: 'Emittente', partner: 'Agenzia / agente partner', client: 'Cliente finale', catalogMode: 'Sviluppo preventivo', catalogModeLead: 'Sviluppa il preventivo in autonomia oppure parti da un prodotto catalogo e perfezionalo per il cliente.', highlights: 'Highlights', highlightsLead: 'Inserisci fino a 5 highlights e associa un’immagine a ciascuno per valorizzare il viaggio.', textBlocks: 'Blocchi testuali', itinerary: 'Itinerario', itineraryLead: 'Aggiungi giornate, pernottamenti, pasti e descrizioni.', pricing: 'Pricing', pricingLead: 'Compila prezzo B2B e prezzo B2C. Nel workflow B2B vengono generate due copie: cliente e uso interno.', totals: 'Totali'
         },
         preview: { title: 'Anteprima documento' },
         doc: {
-          quote: 'Preventivo', issueDate: 'Emissione', validUntil: 'Valido fino al', preparedBy: 'Preparato da', destination: 'Destinazione', dates: 'Date', duration: 'Durata', travelers: 'Viaggiatori', style: 'Stile', sender: 'Emittente', recipient: 'Destinatario', client: 'Cliente finale', partner: 'Partner', intro: 'Introduzione', highlights: 'Highlights del viaggio', itinerary: 'Itinerario sintetico', services: 'Servizi inclusi / esclusi', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', clientNotes: 'Note per il cliente', pricing: 'Il valore del vostro viaggio', terms: 'Condizioni', payment: 'Pagamento', cancellation: 'Cancellazione', validity: 'Validità', booking: 'Booking', total: 'Totale', unit: 'Unità', qty: 'Qtà', amount: 'Importo', item: 'Voce', taxNote: 'Nota', insurance: 'Assicurazione viaggio', bookingRequirements: 'Per prenotare', bookingDeposit: 'ACCONTO NECESSARIO PER LA PRENOTAZIONE (30%)', bookingBalance: 'SALDO DA EFFETTUARE ENTRO 45GG DALLA PARTENZA', b2bCopy: 'Copia uso interno', clientCopy: 'Copia cliente', b2bLabel: 'Prezzo partner', b2cLabel: 'Prezzo cliente', internalLabel: 'Costo interno', margin: 'Margine lordo stimato', advisorB2bCopy: 'Copia B2B agente', confidential: 'Confidenziale - uso interno/partner', publicDoc: 'Documento cliente', noData: 'Non specificato'
+          quote: 'Preventivo', issueDate: 'Emissione', validUntil: 'Valido fino al', preparedBy: 'Preparato da', destination: 'Destinazione', dates: 'Date', duration: 'Durata', travelers: 'Viaggiatori', style: 'Stile', sender: 'Emittente', recipient: 'Destinatario', client: 'Cliente finale', partner: 'Partner', intro: 'Introduzione', highlights: 'Highlights del viaggio', itinerary: 'Itinerario sintetico', services: 'Servizi inclusi / esclusi', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', clientNotes: 'Note per il cliente', pricing: 'Il valore del vostro viaggio', terms: 'Condizioni', payment: 'Pagamento', cancellation: 'Cancellazione', validity: 'Validità', booking: 'Booking', total: 'Totale', unit: 'Unità', qty: 'Qtà', amount: 'Importo', item: 'Voce', taxNote: 'Nota', insurance: 'Assicurazione viaggio', bookingRequirements: 'Per prenotare', bookingDeposit: 'ACCONTO NECESSARIO PER LA PRENOTAZIONE (30%)', bookingBalance: 'SALDO DA EFFETTUARE ENTRO 45GG DALLA PARTENZA', b2bCopy: 'Copia uso interno', clientCopy: 'Copia cliente', b2bLabel: 'Prezzo partner B2B', b2cLabel: 'Prezzo cliente B2C', internalLabel: 'Costo netto fornitore', margin: 'Margine HOAEXP', hoaexpMargin: 'Margine HOAEXP', partnerMargin: 'Margine partner', chainMargin: 'Margine totale filiera', netCostUnknown: 'N/D - costo netto non configurato', netCostPartial: 'Costo netto parziale: alcuni prodotti catalogo non hanno costo netto fornitore configurato. Margine HOAEXP e margine totale filiera non vengono stimati per evitare dati falsi.', pricingWarning: 'Controllo pricing', marginInvalid: 'Attenzione: alcune righe hanno B2B inferiore al costo netto o B2C inferiore al B2B.', advisorB2bCopy: 'Copia B2B agente', confidential: 'Confidenziale - uso interno/partner', publicDoc: 'Documento cliente', internalPartnerNote: 'Nota interna partner / commissione', noData: 'Non specificato'
         }
       },
       en: {
@@ -1933,6 +2191,9 @@
           confirmReset: 'Do you want to delete all data in the current quote?',
           demoLoaded: 'Demo loaded.',
           saved: 'Data saved.',
+          lightDraftSaved: 'Light draft saved and exported.',
+          imagesRemoved: 'All highlight images have been removed.',
+          storageFull: 'Local storage is full: remove images or save a light draft.',
           imported: 'Quote imported.',
           pdfLoading: 'Preparing PDF...',
           pdfReady: 'PDF generated.',
@@ -1953,17 +2214,17 @@
           agent_client: ['HOAEXP advisor → Final client', 'B2C proposal issued by the partner agency/advisor to the client.']
         },
         buttons: {
-          downloadPdf: 'Download PDF / copies', print: 'Download advisor B2B PDF', exportJson: 'Export JSON', importJson: 'Import JSON', demo: 'Load demo', reset: 'Reset', prev: 'Back', next: 'Next', addHighlight: 'Add highlight', addDay: 'Add day', addDayBefore: 'Add before', addDayAfter: 'Add after', addPrice: 'Add row', applyCatalog: 'Apply catalog product', refresh: 'Refresh', remove: 'Remove'
+          downloadPdf: 'Download PDF / copies', print: 'Download advisor B2B PDF', preflight: 'Final PDF check', exportJson: 'Export JSON', importJson: 'Import JSON', demo: 'Load demo', reset: 'Reset', prev: 'Back', next: 'Next', addHighlight: 'Add highlight', addDay: 'Add day', addDayBefore: 'Add before', addDayAfter: 'Add after', addPrice: 'Add row', applyCatalog: 'Apply catalog product', refresh: 'Refresh', remove: 'Remove', removeImages: 'Remove all images', saveLightDraft: 'Save light draft'
         },
         fields: {
-          language: 'Document language', theme: 'Interface theme', quoteNo: 'Quote number', baseCurrency: 'Base currency', issueDate: 'Issue date', validUntil: 'Valid until', company: 'Company', contact: 'Contact', email: 'Email', phone: 'Phone', website: 'Website', vat: 'VAT / Tax ID', address: 'Address', partnerNote: 'Partner / commission note', clientNotes: 'Client notes', developmentMode: 'Development mode', developmentFree: 'Build independently', developmentCatalog: 'Catalog product', catalogArea: 'Safari area', catalogNorth: 'Northern Tanzania - Serengeti and northern circuits', catalogSouth: 'Southern Tanzania - Nyerere / Selous', catalogProduct: 'Catalog product', catalogSeason: 'Rate period', catalogAdults: 'Adults', catalogChildren: 'Children 2-11.99', extraDarNight: 'Extra hotel night pre/post safari', extraNightPlacement: 'Extra night position', extraNightBefore: 'Before the safari', extraNightAfter: 'After the safari', extraNightBoth: 'Before and after the safari', extraDarRoom: 'Extra hotel room', extraDarQty: 'Number of rooms', name: 'Name', country: 'Country', tripTitle: 'Trip title', tripSubtitle: 'Subtitle', destination: 'Destination', travelDates: 'Travel dates', nights: 'Duration', travelers: 'Travelers', style: 'Travel style', preparedBy: 'Prepared by', intro: 'Introduction', closing: 'Closing message', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', payment: 'Payment terms', cancellation: 'Cancellation', validity: 'Validity and availability', bank: 'Bank details / booking instructions', taxNote: 'Tax / commercial note', footer: 'Document footer', insurance: 'Travel insurance', bookingRequirements: 'Booking requirements', rowTitle: 'Row title', qty: 'Quantity', currency: 'Currency', internal: 'Internal cost', b2b: 'B2B price', b2c: 'B2C price', day: 'Day', overnight: 'Overnight / area', meals: 'Meals', description: 'Description'
+          language: 'Document language', theme: 'Interface theme', quoteNo: 'Quote number', baseCurrency: 'Base currency', issueDate: 'Issue date', validUntil: 'Valid until', quoteStatus: 'Quote status', company: 'Company', contact: 'Contact', email: 'Email', phone: 'Phone', website: 'Website', vat: 'VAT / Tax ID', address: 'Address', partnerNote: 'Internal partner / commission note - not visible to client', internalUse: 'Internal use', clientNotes: 'Client notes', developmentMode: 'Development mode', developmentFree: 'Build independently', developmentCatalog: 'Catalog product', catalogArea: 'Safari area', catalogNorth: 'Northern Tanzania - Serengeti and northern circuits', catalogSouth: 'Southern Tanzania - Nyerere / Selous', catalogProduct: 'Catalog product', catalogSeason: 'Rate period', catalogAdults: 'Adults', catalogChildren: 'Children 2-11.99', extraDarNight: 'Extra hotel night pre/post safari', extraNightPlacement: 'Extra night position', extraNightBefore: 'Before the safari', extraNightAfter: 'After the safari', extraNightBoth: 'Before and after the safari', extraDarRoom: 'Extra hotel room', extraDarQty: 'Number of rooms', name: 'Name', country: 'Country', tripTitle: 'Trip title', tripSubtitle: 'Subtitle', destination: 'Destination', travelDates: 'Travel dates', nights: 'Duration', travelers: 'Travelers', style: 'Travel style', preparedBy: 'Prepared by', intro: 'Introduction', closing: 'Closing message', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', payment: 'Payment terms', cancellation: 'Cancellation', validity: 'Validity and availability', bank: 'Bank details / booking instructions', taxNote: 'Tax / commercial note', footer: 'Document footer', insurance: 'Travel insurance', bookingRequirements: 'Booking requirements', rowTitle: 'Row title', qty: 'Quantity', currency: 'Currency', internal: 'Supplier net cost', b2b: 'Partner B2B price', b2c: 'Client B2C price', day: 'Day', overnight: 'Overnight / area', meals: 'Meals', description: 'Description'
         },
         sections: {
           coreSettings: 'Core settings', sender: 'Sender', partner: 'Partner agency / advisor', client: 'Final client', catalogMode: 'Quote development', catalogModeLead: 'Build the quote independently or start from a catalog product and refine it for the client.', highlights: 'Highlights', highlightsLead: 'Add up to 5 highlights and match each one with an image to enhance the journey.', textBlocks: 'Text blocks', itinerary: 'Itinerary', itineraryLead: 'Add days, overnights, meals and descriptions.', pricing: 'Pricing', pricingLead: 'Fill B2B and B2C prices. In the B2B workflow, two copies are generated: client-facing and internal use.', totals: 'Totals'
         },
         preview: { title: 'Document preview' },
         doc: {
-          quote: 'Quote', issueDate: 'Issue date', validUntil: 'Valid until', preparedBy: 'Prepared by', destination: 'Destination', dates: 'Dates', duration: 'Duration', travelers: 'Travelers', style: 'Style', sender: 'Sender', recipient: 'Recipient', client: 'Final client', partner: 'Partner', intro: 'Introduction', highlights: 'Trip highlights', itinerary: 'Itinerary overview', services: 'Included / excluded services', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', clientNotes: 'Client notes', pricing: 'The value of your journey', terms: 'Terms', payment: 'Payment', cancellation: 'Cancellation', validity: 'Validity', booking: 'Booking', total: 'Total', unit: 'Unit', qty: 'Qty', amount: 'Amount', item: 'Item', taxNote: 'Note', insurance: 'Travel insurance', bookingRequirements: 'To book', bookingDeposit: 'DEPOSIT REQUIRED TO CONFIRM THE BOOKING (30%)', bookingBalance: 'BALANCE DUE 45 DAYS BEFORE DEPARTURE', b2bCopy: 'Internal copy', clientCopy: 'Client copy', b2bLabel: 'Partner price', b2cLabel: 'Client price', internalLabel: 'Internal cost', margin: 'Estimated gross margin', advisorB2bCopy: 'Advisor B2B copy', confidential: 'Confidential - internal/partner use', publicDoc: 'Client document', noData: 'Not specified'
+          quote: 'Quote', issueDate: 'Issue date', validUntil: 'Valid until', preparedBy: 'Prepared by', destination: 'Destination', dates: 'Dates', duration: 'Duration', travelers: 'Travelers', style: 'Style', sender: 'Sender', recipient: 'Recipient', client: 'Final client', partner: 'Partner', intro: 'Introduction', highlights: 'Trip highlights', itinerary: 'Itinerary overview', services: 'Included / excluded services', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', clientNotes: 'Client notes', pricing: 'The value of your journey', terms: 'Terms', payment: 'Payment', cancellation: 'Cancellation', validity: 'Validity', booking: 'Booking', total: 'Total', unit: 'Unit', qty: 'Qty', amount: 'Amount', item: 'Item', taxNote: 'Note', insurance: 'Travel insurance', bookingRequirements: 'To book', bookingDeposit: 'DEPOSIT REQUIRED TO CONFIRM THE BOOKING (30%)', bookingBalance: 'BALANCE DUE 45 DAYS BEFORE DEPARTURE', b2bCopy: 'Internal copy', clientCopy: 'Client copy', b2bLabel: 'Partner B2B price', b2cLabel: 'Client B2C price', internalLabel: 'Supplier net cost', margin: 'HOAEXP margin', hoaexpMargin: 'HOAEXP margin', partnerMargin: 'Partner margin', chainMargin: 'Total chain margin', netCostUnknown: 'N/A - supplier net cost not configured', netCostPartial: 'Partial net cost: some catalog products do not have supplier net cost configured. HOAEXP margin and total chain margin are not estimated to avoid false data.', pricingWarning: 'Pricing control', marginInvalid: 'Warning: some rows have B2B below supplier net cost or B2C below B2B.', advisorB2bCopy: 'Advisor B2B copy', confidential: 'Confidential - internal/partner use', publicDoc: 'Client document', internalPartnerNote: 'Internal partner / commission note', noData: 'Not specified'
         }
       }
     };
@@ -2038,11 +2299,11 @@
 
     const defaultState = () => ({
       settings: { lang: 'it', theme: 'light', workflow: 'b2b' },
-      meta: { quoteNo: 'HOA-' + new Date().getFullYear() + '-001', issueDate: today, validUntil: valid, preparedBy: 'HOAEXP Sales Team', currency: 'EUR' },
+      meta: { quoteNo: 'HOA-' + new Date().getFullYear() + '-001', issueDate: today, validUntil: valid, preparedBy: 'HOAEXP Sales Team', currency: 'EUR', status: 'draft', createdBy: 'agent_id' },
       sender: { ...HOAEXP_FIXED },
       partner: { company: '', contact: '', email: '', phone: '', commissionNote: '' },
       client: { name: '', email: '', phone: '', country: '', notes: { it: '', en: '' } },
-      catalog: { mode: 'free', area: 'south', productId: 'smart-safari-car', seasonId: 'default', adults: 2, children: 0, extraDarNight: false, extraDarRoomId: 'superior-double', extraDarQty: 1, extraDarPlacement: 'before' },
+      catalog: { mode: 'free', area: 'south', productId: 'smart-safari-car', seasonId: 'default', adults: 2, children: 0, extraDarNight: false, extraDarRoomId: 'superior-double', extraDarQty: 1, extraDarPlacement: 'before', catalogVersion: '2026.2027.1', rateVersion: '2026.2027.1' },
       trip: {
         title: { it: 'Safari su misura in Tanzania', en: 'Tailor-made Tanzania Safari' },
         subtitle: { it: 'Una proposta costruita per trasformare il viaggio in esperienza memorabile.', en: 'A proposal designed to turn the journey into a memorable experience.' },
@@ -2077,8 +2338,9 @@
         bookingRequirements: { it: fixedTerms('it', 'EUR').bookingRequirements, en: fixedTerms('en', 'EUR').bookingRequirements }
       },
       prices: [
-        { label: { it: 'Quota safari per persona in camera doppia', en: 'Safari package per person in double room' }, qty: 2, currency: 'EUR', internal: 2500, b2b: 3000, b2c: 3600, notes: { it: 'Commissionabile secondo accordo partner.', en: 'Commissionable according to partner agreement.' } }
+        { label: { it: 'Quota safari per persona in camera doppia', en: 'Safari package per person in double room' }, qty: 2, currency: 'EUR', internal: 2500, b2b: 3000, b2c: 3600, netCostStatus: 'known', notes: { it: 'Commissionabile secondo accordo partner.', en: 'Commissionable according to partner agreement.' } }
       ],
+      audit: { quote_id: 'HOA-' + new Date().getFullYear() + '-001', created_by: 'agent_id', workflow: 'b2b', catalog_version: '2026.2027.1', generated_at: '', pdf_client_hash: '', pdf_internal_hash: '' },
       options: {
         taxNote: { it: 'Prezzi espressi nella valuta indicata. Eventuali tasse locali, adeguamenti valuta o fee bancarie saranno confermati prima dell’emissione finale.', en: 'Prices are shown in the indicated currency. Local taxes, currency adjustments or bank fees will be confirmed before final issue.' },
         footer: { it: 'HOAEXP L.L.C-FZ - TIN/VAT Number: 104762263200003 - reservations@hoaexp.com - www.hoaexp.com', en: 'HOAEXP L.L.C-FZ - TIN/VAT Number: 104762263200003 - reservations@hoaexp.com - www.hoaexp.com' }
@@ -2087,6 +2349,26 @@
 
     let state = loadState();
     let currentStep = 0;
+
+    const APP_VERSION = 'v41-step5';
+    const CATALOG_DEFAULT_META = Object.freeze({
+      catalog_version: '2026.2027.1',
+      rate_version: '2026.2027.1',
+      valid_from: '2026-07-01',
+      valid_to: '2027-10-31',
+      status: 'active',
+      last_updated_by: 'admin',
+      last_updated_at: '2026-05-07T10:00:00Z'
+    });
+    const QUOTE_STATUSES = ['draft', 'in_review', 'approved', 'sent', 'accepted', 'expired', 'cancelled'];
+    const QUOTE_STATUS_LABELS = Object.freeze({
+      it: { draft: 'Bozza', in_review: 'In revisione', approved: 'Approvato', sent: 'Inviato', accepted: 'Accettato', expired: 'Scaduto', cancelled: 'Annullato' },
+      en: { draft: 'Draft', in_review: 'In review', approved: 'Approved', sent: 'Sent', accepted: 'Accepted', expired: 'Expired', cancelled: 'Cancelled' }
+    });
+    const LIGHT_DRAFT_STORAGE_KEY = STORAGE_KEY + '.light';
+    const AUTOSAVE_DEBOUNCE_MS = 650;
+    let autosaveTimer = null;
+    let lastStorageWarningAt = 0;
 
     const DEFAULT_HIGHLIGHT_FOMO = [
       { it: 'Le guide migliori e i lodge più richiesti hanno disponibilità limitata.', en: 'The best guides and most requested lodges have limited availability.' },
@@ -6090,6 +6372,20 @@
 }
 ];
 
+    function normalizeCatalogMetadata() {
+      CATALOG_PRODUCTS.forEach(product => {
+        product.product_id = product.product_id || product.code || product.id;
+        product.catalog_version = product.catalog_version || CATALOG_DEFAULT_META.catalog_version;
+        product.rate_version = product.rate_version || CATALOG_DEFAULT_META.rate_version;
+        product.valid_from = product.valid_from || CATALOG_DEFAULT_META.valid_from;
+        product.valid_to = product.valid_to || CATALOG_DEFAULT_META.valid_to;
+        product.status = product.status || CATALOG_DEFAULT_META.status;
+        product.last_updated_by = product.last_updated_by || CATALOG_DEFAULT_META.last_updated_by;
+        product.last_updated_at = product.last_updated_at || CATALOG_DEFAULT_META.last_updated_at;
+      });
+    }
+    normalizeCatalogMetadata();
+
     const EXTRA_DAR_ROOMS = [
       { id: 'superior-single', label: 'Superior Room - Single', b2b: 108, b2c: 122 },
       { id: 'superior-double', label: 'Superior Room - Double', b2b: 144, b2c: 162 },
@@ -6186,6 +6482,14 @@
     function enforceFixedState() {
       state.sender = { ...HOAEXP_FIXED };
       if (!ALLOWED_CURRENCIES.includes(state.meta.currency)) state.meta.currency = 'EUR';
+      if (!QUOTE_STATUSES.includes(state.meta.status)) state.meta.status = 'draft';
+      if (!state.meta.createdBy) state.meta.createdBy = state.meta.preparedBy || 'agent_id';
+      const selectedProductForMeta = CATALOG_PRODUCTS.find(product => product.id === state.catalog.productId) || CATALOG_PRODUCTS[0];
+      if (!state.catalog.catalogVersion) state.catalog.catalogVersion = selectedProductForMeta ? selectedProductForMeta.catalog_version : CATALOG_DEFAULT_META.catalog_version;
+      if (!state.catalog.rateVersion) state.catalog.rateVersion = selectedProductForMeta ? selectedProductForMeta.rate_version : CATALOG_DEFAULT_META.rate_version;
+      state.catalog.catalogVersion = selectedProductForMeta ? selectedProductForMeta.catalog_version : state.catalog.catalogVersion;
+      state.catalog.rateVersion = selectedProductForMeta ? selectedProductForMeta.rate_version : state.catalog.rateVersion;
+      normalizeAuditState();
       const lang = currentLang();
       const terms = fixedTerms(lang, state.meta.currency);
       ['payment', 'cancellation', 'validity', 'bank', 'insurance', 'confirmation', 'bookingRequirements'].forEach(key => {
@@ -6238,9 +6542,57 @@
       });
     }
 
+    function isQuotaExceededError(error) {
+      return Boolean(error && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED' || error.code === 22 || error.code === 1014));
+    }
+
+    function showStorageWarning(message) {
+      const node = $('#storageStatus');
+      if (node) {
+        node.hidden = false;
+        node.textContent = message;
+      }
+      announce(message);
+    }
+
+    function clearStorageWarning() {
+      const node = $('#storageStatus');
+      if (node) {
+        node.hidden = true;
+        node.textContent = '';
+      }
+    }
+
+    function writeStateNow(silent = true, sourceState = state, key = STORAGE_KEY) {
+      try {
+        localStorage.setItem(key, JSON.stringify(sourceState));
+        clearStorageWarning();
+        if (!silent) announce(t('app.saved'));
+        return true;
+      } catch (error) {
+        const now = Date.now();
+        if (isQuotaExceededError(error)) {
+          if (now - lastStorageWarningAt > 1200) {
+            showStorageWarning(t('app.storageFull'));
+            lastStorageWarningAt = now;
+          }
+        } else {
+          showStorageWarning(currentLang() === 'en' ? 'Autosave failed in this browser.' : 'Autosalvataggio non riuscito in questo browser.');
+        }
+        return false;
+      }
+    }
+
     function saveState(silent) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      if (!silent) announce(t('app.saved'));
+      if (autosaveTimer) clearTimeout(autosaveTimer);
+      if (silent) {
+        autosaveTimer = setTimeout(() => {
+          autosaveTimer = null;
+          writeStateNow(true);
+        }, AUTOSAVE_DEBOUNCE_MS);
+      } else {
+        writeStateNow(false);
+      }
     }
 
     function mergeDeep(base, patch) {
@@ -6308,6 +6660,17 @@
       if (node) node.textContent = message;
     }
 
+
+    function syncSecurityNotice() {
+      const node = $('#securityTestNotice');
+      if (!node) return;
+      if (currentLang() === 'en') {
+        node.innerHTML = '<strong>Reserved test environment</strong><span>Unprotected public URL: use only for controlled testing. For operational use with agents enable Cloudflare Access, Netlify/Vercel protection, or D1OS login.</span>';
+      } else {
+        node.innerHTML = '<strong>Ambiente test riservato</strong><span>URL pubblico non protetto: usare solo per test controllati. Per uso operativo con agenti attivare Cloudflare Access, Netlify/Vercel protection o login D1OS.</span>';
+      }
+    }
+
     function render() {
       enforceFixedState();
       document.documentElement.lang = currentLang();
@@ -6319,7 +6682,9 @@
       bindFormValues();
       renderRepeaters();
       renderTotals();
+      renderPreflightStatus();
       renderPreview();
+      syncSecurityNotice();
       bindFixedReadonlyFields();
       updateStepVisibility();
       saveState(true);
@@ -6329,10 +6694,18 @@
       $$('[data-i18n]').forEach(node => { node.textContent = t(node.dataset.i18n); });
       $('#languageSelect').value = currentLang();
       $('#themeSelect').value = state.settings.theme || 'light';
+      updateQuoteStatusOptions();
       const stepInfo = t('steps')[currentStep];
       $('#panelTitle').textContent = stepInfo[0];
       $('#panelLead').textContent = stepInfo[1];
       $('#previewMeta').textContent = `${state.meta.quoteNo || ''} · ${t('workflows.' + state.settings.workflow + '.0') || ''}`;
+    }
+
+    function updateQuoteStatusOptions() {
+      const select = $('#quoteStatus');
+      if (!select) return;
+      const labels = QUOTE_STATUS_LABELS[currentLang()] || QUOTE_STATUS_LABELS.it;
+      select.innerHTML = QUOTE_STATUSES.map(status => `<option value="${status}" ${state.meta.status === status ? 'selected' : ''}>${escapeHtml(labels[status] || status)}</option>`).join('');
     }
 
     function renderStepper() {
@@ -6510,6 +6883,7 @@
         internal: transfer.rate,
         b2b: transfer.rate,
         b2c: transfer.rate,
+        netCostStatus: 'known',
         notes: {
           it: `Voce automatica Tembo Hotel. ${placement === 'both' ? 'Pre e post safari: massimo 2 tratte calcolate.' : 'Una tratta calcolata in base alla posizione della notte extra.'} Tariffa: ${temboTransferTariffText('it')}.`,
           en: `Automatic Tembo Hotel item. ${placement === 'both' ? 'Pre and post safari: maximum 2 transfer legs calculated.' : 'One transfer leg calculated from the extra-night position.'} Rate: ${temboTransferTariffText('en')}.`
@@ -6623,7 +6997,8 @@
         internal: rate.b2b,
         b2b: rate.b2b,
         b2c: rate.b2c,
-        notes: note || { it: 'Prezzo catalogo per persona.', en: 'Catalog price per person.' }
+        netCostStatus: 'unknown',
+        notes: note || { it: 'Prezzo catalogo per persona. Costo netto fornitore non configurato: margine HOAEXP non calcolato.', en: 'Catalog price per person. Supplier net cost not configured: HOAEXP margin not calculated.' }
       };
     }
 
@@ -6702,6 +7077,7 @@
           internal: room.b2b,
           b2b: room.b2b,
           b2c: room.b2c,
+          netCostStatus: 'unknown',
           notes: {
             it: nights === 2 ? `${hotel.noteIt} Calcolato per notte pre e post safari.` : hotel.noteIt,
             en: nights === 2 ? `${hotel.noteEn} Calculated for one pre-safari and one post-safari night.` : hotel.noteEn
@@ -6721,6 +7097,7 @@
             internal: transfer.rate,
             b2b: transfer.rate,
             b2c: transfer.rate,
+            netCostStatus: 'known',
             notes: {
               it: `Prezzo per tratta. Tariffa: ${temboTransferTariffText('it')}. Quantità calcolata sulle tratte associate alla notte extra Tembo selezionata.`,
               en: `Price per one-way transfer. Rate: ${temboTransferTariffText('en')}. Quantity calculated from the transfer legs linked to the selected Tembo extra night.`
@@ -6895,7 +7272,7 @@
         fileInput.accept = 'image/*';
         fileInput.dataset.highlightImageIndex = String(index);
         fields.appendChild(fileInput);
-        fields.appendChild(el('div', 'highlight-help', currentLang() === 'en' ? 'Recommended landscape image. The image is embedded in the proposal file.' : 'Consigliata un’immagine orizzontale. L’immagine viene incorporata nel file del preventivo.'));
+        fields.appendChild(el('div', 'highlight-help', currentLang() === 'en' ? 'Recommended landscape image. The image is compressed and embedded in the proposal file.' : 'Consigliata un’immagine orizzontale. L’immagine viene compressa e incorporata nel file del preventivo.'));
         if (item.imageData) {
           const clearBtn = el('button', 'btn small', currentLang() === 'en' ? 'Remove image' : 'Rimuovi immagine');
           clearBtn.type = 'button';
@@ -6936,22 +7313,17 @@
       const index = Number(event.target.dataset.highlightImageIndex);
       const file = event.target.files && event.target.files[0];
       if (!file) return;
-      compressImageFile(file, 1200, 760, 0.76)
+      compressImageFile(file, 920, 580, 0.58)
         .then(dataUrl => {
           state.highlights[index].imageData = dataUrl;
           render();
         })
         .catch(() => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            state.highlights[index].imageData = reader.result;
-            render();
-          };
-          reader.readAsDataURL(file);
+          alert(currentLang() === 'en' ? 'Image could not be compressed. Please try a smaller file.' : 'Impossibile comprimere l’immagine. Usa un file più leggero.');
         });
     }
 
-    function compressImageFile(file, maxWidth = 1200, maxHeight = 760, quality = 0.76) {
+    function compressImageFile(file, maxWidth = 920, maxHeight = 580, quality = 0.58) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onerror = reject;
@@ -7092,6 +7464,7 @@
           internal: rates.adult,
           b2b: rates.adult,
           b2c: rates.adult,
+          netCostStatus: 'known',
           notes: { it: 'Voce automatica calcolata sul numero di adulti indicati.', en: 'Automatic item calculated from the number of listed adults.' }
         });
       }
@@ -7104,6 +7477,7 @@
           internal: rates.child,
           b2b: rates.child,
           b2c: rates.child,
+          netCostStatus: 'known',
           notes: { it: 'Voce automatica calcolata sul numero di bambini indicati.', en: 'Automatic item calculated from the number of listed children.' }
         });
       }
@@ -7115,26 +7489,85 @@
       return [...cleanRows, ...temboTransferRows(), ...managementFeeRows()];
     }
 
+    function isNetCostKnown(row) {
+      return !(row && row.netCostStatus === 'unknown') && Number.isFinite(Number(row && row.internal));
+    }
+
+    function moneyOrNA(value, currency = state.meta.currency) {
+      return value === null || value === undefined || !Number.isFinite(Number(value)) ? t('doc.netCostUnknown') : money(Number(value), currency);
+    }
+
+    function rowMarginData(row) {
+      const qty = Number(row.qty || 0);
+      const internal = Number(row.internal || 0);
+      const b2b = Number(row.b2b || 0);
+      const b2c = Number(row.b2c || 0);
+      const known = isNetCostKnown(row);
+      return {
+        qty,
+        internal,
+        b2b,
+        b2c,
+        known,
+        internalTotal: known ? qty * internal : null,
+        b2bTotal: qty * b2b,
+        b2cTotal: qty * b2c,
+        hoaexpMargin: known ? qty * (b2b - internal) : null,
+        partnerMargin: qty * (b2c - b2b),
+        chainMargin: known ? qty * (b2c - internal) : null,
+        invalidHoaexp: known && b2b < internal,
+        invalidPartner: b2c < b2b
+      };
+    }
+
     function renderTotals() {
       const totals = calculateTotals();
+      const warnings = [];
+      if (totals.hasUnknownNetCost) warnings.push(t('doc.netCostPartial'));
+      if (totals.invalidMarginRows > 0) warnings.push(t('doc.marginInvalid'));
       $('#totalsBox').innerHTML = `
-        <div class="total-line"><span>${escapeHtml(t('doc.internalLabel'))}</span><strong>${escapeHtml(money(totals.internal, state.meta.currency))}</strong></div>
+        <div class="total-line"><span>${escapeHtml(t('doc.internalLabel'))}</span><strong>${escapeHtml(moneyOrNA(totals.internalDisplay, state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.b2bLabel'))}</span><strong>${escapeHtml(money(totals.b2b, state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.b2cLabel'))}</span><strong>${escapeHtml(money(totals.b2c, state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.bookingDeposit'))}</span><strong>${escapeHtml(money(bookingDeposit(totals.b2c), state.meta.currency))}</strong></div>
         <div class="total-line"><span>${escapeHtml(t('doc.bookingBalance'))}</span><strong>${escapeHtml(money(bookingBalance(totals.b2c), state.meta.currency))}</strong></div>
-        <div class="total-line"><span>${escapeHtml(t('doc.margin'))}</span><strong>${escapeHtml(money(totals.margin, state.meta.currency))}</strong></div>
+        <div class="total-line total-separator"><span>${escapeHtml(t('doc.hoaexpMargin'))}</span><strong>${escapeHtml(moneyOrNA(totals.hoaexpMargin, state.meta.currency))}</strong></div>
+        <div class="total-line"><span>${escapeHtml(t('doc.partnerMargin'))}</span><strong>${escapeHtml(money(totals.partnerMargin, state.meta.currency))}</strong></div>
+        <div class="total-line"><span>${escapeHtml(t('doc.chainMargin'))}</span><strong>${escapeHtml(moneyOrNA(totals.chainMargin, state.meta.currency))}</strong></div>
+        ${warnings.length ? `<div class="total-warning"><strong>${escapeHtml(t('doc.pricingWarning'))}</strong><br>${warnings.map(escapeHtml).join('<br>')}</div>` : ''}
       `;
     }
 
     function calculateTotals() {
-      return effectivePriceRows().reduce((acc, row) => {
-        const qty = Number(row.qty || 0);
-        acc.internal += qty * Number(row.internal || 0);
-        acc.b2b += qty * Number(row.b2b || 0);
-        acc.b2c += qty * Number(row.b2c || 0);
-        return acc;
-      }, { internal: 0, b2b: 0, b2c: 0, get margin() { return this.b2b - this.internal; } });
+      const acc = {
+        internal: 0,
+        b2b: 0,
+        b2c: 0,
+        knownB2b: 0,
+        knownB2c: 0,
+        unknownNetCostRows: 0,
+        invalidMarginRows: 0
+      };
+      effectivePriceRows().forEach(row => {
+        const margin = rowMarginData(row);
+        acc.b2b += margin.b2bTotal;
+        acc.b2c += margin.b2cTotal;
+        if (margin.known) {
+          acc.internal += margin.internalTotal;
+          acc.knownB2b += margin.b2bTotal;
+          acc.knownB2c += margin.b2cTotal;
+        } else {
+          acc.unknownNetCostRows += 1;
+        }
+        if (margin.invalidHoaexp || margin.invalidPartner) acc.invalidMarginRows += 1;
+      });
+      acc.hasUnknownNetCost = acc.unknownNetCostRows > 0;
+      acc.internalDisplay = acc.hasUnknownNetCost ? null : acc.internal;
+      acc.hoaexpMargin = acc.hasUnknownNetCost ? null : acc.b2b - acc.internal;
+      acc.partnerMargin = acc.b2c - acc.b2b;
+      acc.chainMargin = acc.hasUnknownNetCost ? null : acc.b2c - acc.internal;
+      acc.margin = acc.hoaexpMargin === null ? 0 : acc.hoaexpMargin;
+      return acc;
     }
 
     function bookingDeposit(total) {
@@ -7232,7 +7665,7 @@
           el('h4', '', contact),
           el('p', 'advisor-company', company),
           rows.length ? el('div', 'advisor-contact-list', rows.map(row => el('p', '', [el('strong', '', row[0] + ': '), row[1]]))) : el('p', 'advisor-note', currentLang() === 'en' ? 'Contact details will be confirmed by HOAEXP Reservations.' : 'I contatti saranno confermati dal team HOAEXP Reservations.'),
-          nonEmpty(advisor.commissionNote) ? el('p', 'advisor-note', advisor.commissionNote) : null
+          (isInternal && nonEmpty(advisor.commissionNote)) ? el('p', 'advisor-note internal-only', [el('strong', '', t('doc.internalPartnerNote') + ': '), advisor.commissionNote]) : null
         ]);
       };
       const introHighlightsSection = () => {
@@ -7492,10 +7925,11 @@
       const header = isInternal ? [
         el('th', '', t('doc.item')),
         el('th', 'right', t('doc.qty')),
+        el('th', 'right', t('doc.internalLabel')),
         el('th', 'right', t('doc.b2bLabel')),
         el('th', 'right', t('doc.b2cLabel')),
-        el('th', 'right', t('doc.total') + ' B2B'),
-        el('th', 'right', t('doc.total') + ' B2C')
+        el('th', 'right', t('doc.hoaexpMargin')),
+        el('th', 'right', t('doc.partnerMargin'))
       ] : isB2bOnly ? [
         el('th', '', t('doc.item')),
         el('th', 'right', t('doc.qty')),
@@ -7513,15 +7947,15 @@
         const qty = Number(row.qty || 0);
         const currency = row.currency || state.meta.currency;
         if (isInternal) {
-          const b2b = Number(row.b2b || 0);
-          const b2c = Number(row.b2c || 0);
+          const margin = rowMarginData(row);
           tbody.appendChild(el('tr', '', [
             el('td', '', [localizedValue(row.label), localizedValue(row.notes) ? el('div', 'muted', localizedValue(row.notes)) : null]),
             el('td', 'right', qty),
-            el('td', 'right', money(b2b, currency)),
-            el('td', 'right', money(b2c, currency)),
-            el('td', 'right', money(b2b * qty, currency)),
-            el('td', 'right', money(b2c * qty, currency))
+            el('td', 'right', moneyOrNA(margin.known ? margin.internal : null, currency)),
+            el('td', 'right', money(margin.b2b, currency)),
+            el('td', 'right', money(margin.b2c, currency)),
+            el('td', 'right', moneyOrNA(margin.hoaexpMargin, currency)),
+            el('td', 'right', money(margin.partnerMargin, currency))
           ]));
         } else if (isB2bOnly) {
           const b2b = Number(row.b2b || 0);
@@ -7534,7 +7968,7 @@
         } else {
           const b2c = Number(row.b2c || 0);
           tbody.appendChild(el('tr', '', [
-            el('td', '', [localizedValue(row.label), localizedValue(row.notes) ? el('div', 'muted', localizedValue(row.notes)) : null]),
+            el('td', '', [localizedValue(row.label), null]),
             el('td', 'right', qty),
             el('td', 'right', money(b2c, currency)),
             el('td', 'right', money(b2c * qty, currency))
@@ -7545,35 +7979,51 @@
         tbody.appendChild(el('tr', 'total-row', [
           el('td', '', t('doc.total')),
           el('td', 'right', ''),
-          el('td', 'right', ''),
-          el('td', 'right', ''),
+          el('td', 'right', moneyOrNA(totals.internalDisplay, state.meta.currency)),
           el('td', 'right', money(totals.b2b, state.meta.currency)),
-          el('td', 'right', money(totals.b2c, state.meta.currency))
+          el('td', 'right', money(totals.b2c, state.meta.currency)),
+          el('td', 'right', moneyOrNA(totals.hoaexpMargin, state.meta.currency)),
+          el('td', 'right', money(totals.partnerMargin, state.meta.currency))
         ]));
         tbody.appendChild(el('tr', 'total-row deposit-row', [
           el('td', '', t('doc.bookingDeposit')),
           el('td', 'right', ''),
           el('td', 'right', ''),
-          el('td', 'right', ''),
           el('td', 'right', money(bookingDeposit(totals.b2b), state.meta.currency)),
-          el('td', 'right', money(bookingDeposit(totals.b2c), state.meta.currency))
+          el('td', 'right', money(bookingDeposit(totals.b2c), state.meta.currency)),
+          el('td', 'right', ''),
+          el('td', 'right', '')
         ]));
         tbody.appendChild(el('tr', 'total-row balance-row', [
           el('td', '', t('doc.bookingBalance')),
           el('td', 'right', ''),
           el('td', 'right', ''),
-          el('td', 'right', ''),
           el('td', 'right', money(bookingBalance(totals.b2b), state.meta.currency)),
-          el('td', 'right', money(bookingBalance(totals.b2c), state.meta.currency))
+          el('td', 'right', money(bookingBalance(totals.b2c), state.meta.currency)),
+          el('td', 'right', ''),
+          el('td', 'right', '')
         ]));
         tbody.appendChild(el('tr', '', [
-          el('td', '', t('doc.margin')),
+          el('td', '', t('doc.chainMargin')),
           el('td', 'right', ''),
           el('td', 'right', ''),
           el('td', 'right', ''),
           el('td', 'right', ''),
-          el('td', 'right', money(totals.b2c - totals.b2b, state.meta.currency))
+          el('td', 'right', ''),
+          el('td', 'right', moneyOrNA(totals.chainMargin, state.meta.currency))
         ]));
+        if (totals.hasUnknownNetCost || totals.invalidMarginRows > 0) {
+          const warningText = [totals.hasUnknownNetCost ? t('doc.netCostPartial') : '', totals.invalidMarginRows > 0 ? t('doc.marginInvalid') : ''].filter(Boolean).join(' ');
+          tbody.appendChild(el('tr', '', [
+            el('td', '', [el('strong', '', t('doc.pricingWarning')), el('div', 'muted', warningText)]),
+            el('td', 'right', ''),
+            el('td', 'right', ''),
+            el('td', 'right', ''),
+            el('td', 'right', ''),
+            el('td', 'right', ''),
+            el('td', 'right', '')
+          ]));
+        }
       } else if (isB2bOnly) {
         tbody.appendChild(el('tr', 'total-row', [
           el('td', '', t('doc.total')),
@@ -7643,12 +8093,84 @@
       insertDayAt(state.itinerary.length);
     }
     function addPrice() {
-      state.prices.push({ label: { it: '', en: '' }, qty: 1, currency: state.meta.currency || 'EUR', internal: 0, b2b: 0, b2c: 0, notes: { it: '', en: '' } });
+      state.prices.push({ label: { it: '', en: '' }, qty: 1, currency: state.meta.currency || 'EUR', internal: 0, b2b: 0, b2c: 0, netCostStatus: 'known', notes: { it: '', en: '' } });
       render();
     }
 
+    function stateWithoutEmbeddedImages(sourceState = state) {
+      const copy = JSON.parse(JSON.stringify(sourceState));
+      if (Array.isArray(copy.highlights)) copy.highlights.forEach(item => { if (item) item.imageData = ''; });
+      if (!copy.audit || typeof copy.audit !== 'object') copy.audit = {};
+      copy.audit.quote_id = copy.meta && copy.meta.quoteNo ? copy.meta.quoteNo : '';
+      copy.audit.created_by = copy.meta && (copy.meta.createdBy || copy.meta.preparedBy) ? (copy.meta.createdBy || copy.meta.preparedBy) : 'agent_id';
+      copy.audit.workflow = copy.settings && copy.settings.workflow ? copy.settings.workflow : 'b2b';
+      copy.audit.catalog_version = copy.catalog && copy.catalog.catalogVersion ? copy.catalog.catalogVersion : CATALOG_DEFAULT_META.catalog_version;
+      return copy;
+    }
+
+    function removeAllHighlightImages() {
+      const hasImages = Array.isArray(state.highlights) && state.highlights.some(item => item && item.imageData);
+      if (!hasImages) {
+        announce(currentLang() === 'en' ? 'No images to remove.' : 'Nessuna immagine da rimuovere.');
+        return;
+      }
+      const question = currentLang() === 'en'
+        ? 'Remove all embedded highlight images from this quote?'
+        : 'Rimuovere tutte le immagini highlight incorporate in questo preventivo?';
+      if (!window.confirm(question)) return;
+      state.highlights.forEach(item => { if (item) item.imageData = ''; });
+      saveState(false);
+      render();
+      announce(t('app.imagesRemoved'));
+    }
+
+    function saveLightDraft() {
+      normalizeAuditState();
+      const light = stateWithoutEmbeddedImages(state);
+      const wrapped = auditExportEnvelope(light, 'light_draft_no_images');
+      writeStateNow(true, light, LIGHT_DRAFT_STORAGE_KEY);
+      const blob = new Blob([JSON.stringify(wrapped, null, 2)], { type: 'application/json' });
+      downloadBlob(blob, `${fileBaseName()}-LIGHT-DRAFT.json`);
+      announce(t('app.lightDraftSaved'));
+    }
+
+    const SENSITIVE_JSON_WARNING = {
+      it: 'Questo file contiene dati commerciali e personali. Non condividerlo fuori dai canali autorizzati.',
+      en: 'This file contains commercial and personal data. Do not share it outside authorized channels.'
+    };
+    const MAX_IMPORT_JSON_BYTES = 2 * 1024 * 1024;
+
+    function currentSensitiveJsonWarning() {
+      return currentLang() === 'en' ? SENSITIVE_JSON_WARNING.en : SENSITIVE_JSON_WARNING.it;
+    }
+
+    function confirmSensitiveJsonAction(actionType) {
+      const label = currentLang() === 'en'
+        ? (actionType === 'import' ? 'Import JSON file?' : 'Export JSON file?')
+        : (actionType === 'import' ? 'Importare il file JSON?' : 'Esportare il file JSON?');
+      return window.confirm(`${label}
+
+${currentSensitiveJsonWarning()}`);
+    }
+
+    function validateImportJsonFile(file) {
+      if (!file) return false;
+      const name = String(file.name || '').toLowerCase();
+      if (!name.endsWith('.json')) {
+        alert(currentLang() === 'en' ? 'Only .json files are allowed.' : 'Sono consentiti solo file .json.');
+        return false;
+      }
+      if (file.size > MAX_IMPORT_JSON_BYTES) {
+        alert(currentLang() === 'en' ? 'The JSON file is too large. Maximum size: 2 MB.' : 'Il file JSON è troppo grande. Dimensione massima: 2 MB.');
+        return false;
+      }
+      return true;
+    }
+
     function exportJson() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      if (!confirmSensitiveJsonAction('export')) return;
+      normalizeAuditState();
+      const blob = new Blob([JSON.stringify(auditExportEnvelope(state, 'full_quote'), null, 2)], { type: 'application/json' });
       downloadBlob(blob, `${fileBaseName()}.json`);
     }
 
@@ -7661,20 +8183,105 @@
       setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
     }
 
+    function activeCatalogVersion() {
+      const product = selectedCatalogProduct && selectedCatalogProduct();
+      return (product && product.catalog_version) || state.catalog.catalogVersion || CATALOG_DEFAULT_META.catalog_version;
+    }
+
+    function normalizeAuditState() {
+      if (!state.audit || typeof state.audit !== 'object' || Array.isArray(state.audit)) state.audit = {};
+      state.audit.quote_id = state.meta.quoteNo || state.audit.quote_id || '';
+      state.audit.created_by = state.meta.createdBy || state.meta.preparedBy || state.audit.created_by || 'agent_id';
+      state.audit.workflow = state.settings.workflow || state.audit.workflow || 'b2b';
+      state.audit.catalog_version = activeCatalogVersion();
+      if (typeof state.audit.generated_at !== 'string') state.audit.generated_at = '';
+      if (typeof state.audit.pdf_client_hash !== 'string') state.audit.pdf_client_hash = '';
+      if (typeof state.audit.pdf_internal_hash !== 'string') state.audit.pdf_internal_hash = '';
+    }
+
+    function updateAuditAfterPdf(copyMode, hash) {
+      normalizeAuditState();
+      state.audit.generated_at = new Date().toISOString();
+      if (copyMode === 'client') state.audit.pdf_client_hash = hash;
+      if (copyMode === 'internal' || copyMode === 'agent_internal') state.audit.pdf_internal_hash = hash;
+      writeStateNow(true);
+    }
+
+    async function sha256ArrayBuffer(buffer) {
+      if (window.crypto && window.crypto.subtle && buffer) {
+        const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+        return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+      }
+      return 'sha256-unavailable-' + Date.now();
+    }
+
+    function auditExportEnvelope(sourceState, type) {
+      const exportedAt = new Date().toISOString();
+      return {
+        _hoaexp_export: {
+          type,
+          app_version: APP_VERSION,
+          exported_at: exportedAt,
+          warning: currentSensitiveJsonWarning()
+        },
+        ...sourceState
+      };
+    }
+
     function fileBaseName() {
       return ['HOAEXP', state.meta.quoteNo || 'quote', state.settings.workflow, currentLang(), slug(localized('trip.title'))].join('-');
     }
 
+    function importSummary(candidate) {
+      const clean = candidate && candidate._hoaexp_export ? { ...candidate } : candidate;
+      if (clean && clean._hoaexp_export) delete clean._hoaexp_export;
+      const merged = mergeDeep(defaultState(), clean || {});
+      const product = CATALOG_PRODUCTS.find(item => item.id === (merged.catalog && merged.catalog.productId));
+      const imageCount = Array.isArray(merged.highlights) ? merged.highlights.filter(item => item && item.imageData).length : 0;
+      const priceRows = Array.isArray(merged.prices) ? merged.prices.length : 0;
+      const statusLabels = QUOTE_STATUS_LABELS[currentLang()] || QUOTE_STATUS_LABELS.it;
+      const lines = currentLang() === 'en'
+        ? [
+            'JSON import summary before application:',
+            `Quote: ${(merged.meta && merged.meta.quoteNo) || 'N/A'}`,
+            `Status: ${statusLabels[(merged.meta && merged.meta.status) || 'draft'] || 'Draft'}`,
+            `Workflow: ${(merged.settings && merged.settings.workflow) || 'N/A'}`,
+            `Catalog product: ${product ? catalogProductName(product) : 'Free quote / not found'}`,
+            `Catalog version: ${(merged.catalog && merged.catalog.catalogVersion) || (product && product.catalog_version) || CATALOG_DEFAULT_META.catalog_version}`,
+            `Client: ${(merged.client && merged.client.name) || 'N/A'}`,
+            `Price rows: ${priceRows}`,
+            `Embedded images: ${imageCount}`
+          ]
+        : [
+            'Riepilogo import JSON prima dell’applicazione:',
+            `Preventivo: ${(merged.meta && merged.meta.quoteNo) || 'N/D'}`,
+            `Stato: ${statusLabels[(merged.meta && merged.meta.status) || 'draft'] || 'Bozza'}`,
+            `Workflow: ${(merged.settings && merged.settings.workflow) || 'N/D'}`,
+            `Prodotto catalogo: ${product ? catalogProductName(product) : 'Preventivo libero / non trovato'}`,
+            `Versione catalogo: ${(merged.catalog && merged.catalog.catalogVersion) || (product && product.catalog_version) || CATALOG_DEFAULT_META.catalog_version}`,
+            `Cliente: ${(merged.client && merged.client.name) || 'N/D'}`,
+            `Righe prezzo: ${priceRows}`,
+            `Immagini incorporate: ${imageCount}`
+          ];
+      return { text: lines.join('\n'), merged };
+    }
+
     function importJson(file) {
+      if (!validateImportJsonFile(file)) return;
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          state = mergeDeep(defaultState(), JSON.parse(reader.result));
+          const parsed = JSON.parse(reader.result);
+          const summary = importSummary(parsed);
+          const label = currentLang() === 'en' ? 'Apply this imported quote?' : 'Applicare questo preventivo importato?';
+          if (!window.confirm(`${label}\n\n${summary.text}\n\n${currentSensitiveJsonWarning()}`)) return;
+          state = summary.merged;
           currentStep = 0;
+          normalizeAuditState();
           render();
           announce(t('app.imported'));
         } catch (error) {
-          alert('Invalid JSON file.');
+          alert(currentLang() === 'en' ? 'Invalid JSON file.' : 'File JSON non valido.');
         }
       };
       reader.readAsText(file);
@@ -7708,7 +8315,189 @@
       });
     }
 
+
+
+    const HOAEXP_STEP3_PREFLIGHT_VERSION = 'v39-step3';
+
+    function preflightLocale() {
+      const en = currentLang() === 'en';
+      return {
+        title: en ? 'Check before generating the PDF' : 'Controllo prima di generare il PDF',
+        lead: en ? 'Automatic validation of workflow, client data, pricing, payment details and internal-data protection.' : 'Verifica automatica di workflow, dati cliente, pricing, coordinate pagamento e protezione dei dati interni.',
+        statusTitle: en ? 'Final PDF control' : 'Controllo PDF definitivo',
+        ready: en ? 'Ready: no blocking issue detected.' : 'Pronto: nessun blocco rilevato.',
+        blocked: en ? 'Blocked: fix required items before generating the PDF.' : 'Bloccato: correggere i punti obbligatori prima di generare il PDF.',
+        warnings: en ? 'Warnings present: review before sending.' : 'Avvisi presenti: controllare prima dell’invio.',
+        passed: en ? 'Passed' : 'Superati',
+        blocking: en ? 'Blocking' : 'Bloccanti',
+        warning: en ? 'Warnings' : 'Avvisi',
+        close: en ? 'Close' : 'Chiudi',
+        proceedWarnings: en ? 'Warnings detected. Continue generating the PDF anyway?' : 'Sono presenti avvisi non bloccanti. Continuare comunque con la generazione PDF?',
+        fixBlocking: en ? 'PDF generation blocked. Fix the blocking checks shown in the final control panel.' : 'Generazione PDF bloccata. Correggi i controlli bloccanti indicati nel pannello finale.',
+        blocker: en ? 'Required' : 'Obbligatorio',
+        ok: en ? 'OK' : 'OK',
+        warn: en ? 'Warning' : 'Avviso',
+        clientMode: en ? 'Client copy' : 'Copia cliente',
+        internalMode: en ? 'Internal / B2B copy' : 'Copia interna / B2B'
+      };
+    }
+
+    function emailLooksValid(value) {
+      const v = String(value || '').trim();
+      if (!v) return false;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    }
+
+    function phoneLooksPresent(value) {
+      const digits = String(value || '').replace(/\D+/g, '');
+      return digits.length >= 6;
+    }
+
+    function dateValue(value) {
+      const v = String(value || '').trim();
+      if (!v) return null;
+      const parsed = new Date(v);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function selectedCatalogSeason() {
+      const product = typeof selectedCatalogProduct === 'function' ? selectedCatalogProduct() : null;
+      if (!product || !Array.isArray(product.seasons)) return null;
+      return product.seasons.find(season => season.id === state.catalog.seasonId) || null;
+    }
+
+    function addPreflightCheck(list, status, title, detail) {
+      list.push({ status, title, detail: detail || '' });
+    }
+
+    function runPdfPreflight(copyMode = 'client') {
+      enforceFixedState();
+      const checks = [];
+      const totals = calculateTotals();
+      const lang = currentLang();
+      const currency = state.meta.currency;
+      const workflow = state.settings.workflow;
+      const isClientCopy = copyMode === 'client';
+      const workflows = ['b2b', 'hoaexp_client', 'agent_client'];
+      const product = typeof selectedCatalogProduct === 'function' ? selectedCatalogProduct() : null;
+      const season = selectedCatalogSeason();
+      const fixed = fixedTerms(lang, currency);
+      const issue = dateValue(state.meta.issueDate);
+      const valid = dateValue(state.meta.validUntil);
+
+      addPreflightCheck(checks, workflows.includes(workflow) ? 'ok' : 'blocker', currentLang() === 'en' ? 'Workflow selected' : 'Workflow selezionato', workflows.includes(workflow) ? (t('workflows.' + workflow + '.0') || workflow) : (currentLang() === 'en' ? 'Select a valid workflow.' : 'Selezionare un workflow valido.'));
+      addPreflightCheck(checks, ['it', 'en'].includes(lang) ? 'ok' : 'blocker', currentLang() === 'en' ? 'Document language' : 'Lingua documento', lang.toUpperCase());
+      addPreflightCheck(checks, ALLOWED_CURRENCIES.includes(currency) ? 'ok' : 'blocker', currentLang() === 'en' ? 'Currency' : 'Valuta', ALLOWED_CURRENCIES.includes(currency) ? currency : (currentLang() === 'en' ? 'Currency not supported.' : 'Valuta non supportata.'));
+
+      addPreflightCheck(checks, nonEmpty(state.client && state.client.name) ? 'ok' : 'blocker', currentLang() === 'en' ? 'Client name' : 'Nome cliente', nonEmpty(state.client && state.client.name) ? state.client.name : (currentLang() === 'en' ? 'Fill the client name before generating the PDF.' : 'Compilare il nome cliente prima di generare il PDF.'));
+      if (nonEmpty(state.client && state.client.email)) {
+        addPreflightCheck(checks, emailLooksValid(state.client.email) ? 'ok' : 'blocker', currentLang() === 'en' ? 'Client email format' : 'Formato email cliente', state.client.email);
+      } else {
+        addPreflightCheck(checks, 'warn', currentLang() === 'en' ? 'Client email' : 'Email cliente', currentLang() === 'en' ? 'Not filled. Recommended before sending the proposal.' : 'Non compilata. Consigliata prima dell’invio della proposta.');
+      }
+      addPreflightCheck(checks, phoneLooksPresent(state.client && state.client.phone) ? 'ok' : 'warn', currentLang() === 'en' ? 'Client phone' : 'Telefono cliente', phoneLooksPresent(state.client && state.client.phone) ? state.client.phone : (currentLang() === 'en' ? 'Not filled or too short.' : 'Non compilato o troppo breve.'));
+
+      const partnerRequired = workflow === 'b2b' || workflow === 'agent_client' || copyMode === 'agent_internal';
+      if (partnerRequired) {
+        const partnerName = nonEmpty(state.partner && state.partner.company) || nonEmpty(state.partner && state.partner.contact);
+        addPreflightCheck(checks, partnerName ? 'ok' : 'blocker', currentLang() === 'en' ? 'Partner / advisor data' : 'Dati partner / consulente', partnerName ? [state.partner.company, state.partner.contact].filter(nonEmpty).join(' - ') : (currentLang() === 'en' ? 'Fill partner company or advisor name.' : 'Compilare azienda partner o nome consulente.'));
+        const hasPartnerContact = emailLooksValid(state.partner && state.partner.email) || phoneLooksPresent(state.partner && state.partner.phone);
+        addPreflightCheck(checks, hasPartnerContact ? 'ok' : 'warn', currentLang() === 'en' ? 'Partner contact details' : 'Contatti partner', hasPartnerContact ? [state.partner.email, state.partner.phone].filter(nonEmpty).join(' · ') : (currentLang() === 'en' ? 'Add partner email or phone.' : 'Aggiungere email o telefono del partner.'));
+      }
+
+      const adults = Number(state.catalog && state.catalog.adults || 0);
+      const children = Number(state.catalog && state.catalog.children || 0);
+      addPreflightCheck(checks, adults >= 1 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Adults' : 'Adulti', adults >= 1 ? String(adults) : (currentLang() === 'en' ? 'At least one adult is required.' : 'Serve almeno un adulto.'));
+      addPreflightCheck(checks, children >= 0 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Children' : 'Bambini', children >= 0 ? String(children) : (currentLang() === 'en' ? 'Children cannot be negative.' : 'Il numero bambini non può essere negativo.'));
+
+      if (state.catalog && state.catalog.mode === 'catalog') {
+        addPreflightCheck(checks, !!product ? 'ok' : 'blocker', currentLang() === 'en' ? 'Catalog product' : 'Prodotto catalogo', product ? ((product.title && (product.title[lang] || product.title.it || product.title.en)) || product.id) : (currentLang() === 'en' ? 'Select a valid catalog product.' : 'Selezionare un prodotto catalogo valido.'));
+        addPreflightCheck(checks, !!season ? 'ok' : 'blocker', currentLang() === 'en' ? 'Rate period' : 'Periodo tariffario', season ? ((season.label && (season.label[lang] || season.label.it || season.label.en)) || season.id) : (currentLang() === 'en' ? 'Select a valid rate period.' : 'Selezionare un periodo tariffario valido.'));
+        if (state.catalog.extraDarNight) {
+          const rooms = Number(state.catalog.extraDarQty || 0);
+          addPreflightCheck(checks, nonEmpty(state.catalog.extraDarRoomId) ? 'ok' : 'blocker', currentLang() === 'en' ? 'Extra hotel room' : 'Camera hotel extra', nonEmpty(state.catalog.extraDarRoomId) ? state.catalog.extraDarRoomId : (currentLang() === 'en' ? 'Select the extra hotel room.' : 'Selezionare la camera per la notte extra.'));
+          addPreflightCheck(checks, rooms >= 1 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Extra hotel rooms quantity' : 'Numero camere hotel extra', rooms >= 1 ? String(rooms) : (currentLang() === 'en' ? 'Enter at least one room.' : 'Indicare almeno una camera.'));
+        }
+      }
+
+      addPreflightCheck(checks, totals.b2c > 0 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Client total greater than zero' : 'Totale cliente maggiore di zero', totals.b2c > 0 ? money(totals.b2c, currency) : (currentLang() === 'en' ? 'The client total cannot be zero.' : 'Il totale cliente non può essere zero.'));
+      addPreflightCheck(checks, totals.b2c >= totals.b2b ? 'ok' : 'blocker', currentLang() === 'en' ? 'B2C price not below B2B' : 'Prezzo B2C non inferiore al B2B', `${money(totals.b2c, currency)} / ${money(totals.b2b, currency)}`);
+      addPreflightCheck(checks, totals.invalidMarginRows === 0 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Pricing row consistency' : 'Coerenza righe prezzo', totals.invalidMarginRows === 0 ? (currentLang() === 'en' ? 'No negative commercial logic detected.' : 'Nessuna logica commerciale negativa rilevata.') : (currentLang() === 'en' ? 'Some rows have B2B below net cost or B2C below B2B.' : 'Alcune righe hanno B2B sotto costo netto o B2C sotto B2B.'));
+      addPreflightCheck(checks, !totals.hasUnknownNetCost ? 'ok' : 'warn', currentLang() === 'en' ? 'Supplier net cost' : 'Costo netto fornitore', !totals.hasUnknownNetCost ? (currentLang() === 'en' ? 'Configured on all rows.' : 'Configurato su tutte le righe.') : t('doc.netCostPartial'));
+
+      addPreflightCheck(checks, nonEmpty(fixed && fixed.bank) && String(fixed.bank).includes('IBAN') ? 'ok' : 'blocker', currentLang() === 'en' ? 'Bank account by currency' : 'Conto bancario per valuta', nonEmpty(fixed && fixed.bank) ? currency : (currentLang() === 'en' ? 'Bank details missing for selected currency.' : 'Coordinate bancarie mancanti per la valuta selezionata.'));
+      addPreflightCheck(checks, issue && valid ? (valid >= issue ? 'ok' : 'blocker') : 'warn', currentLang() === 'en' ? 'Quote validity date' : 'Data validità preventivo', issue && valid ? (valid >= issue ? state.meta.validUntil : (currentLang() === 'en' ? 'Validity date is earlier than issue date.' : 'La data di validità è precedente alla data di emissione.')) : (currentLang() === 'en' ? 'Check issue and validity dates.' : 'Controllare data emissione e validità.'));
+
+      addPreflightCheck(checks, nonEmpty(localized('services.included')) ? 'ok' : 'warn', currentLang() === 'en' ? 'Included services' : 'Servizi inclusi', nonEmpty(localized('services.included')) ? (currentLang() === 'en' ? 'Filled.' : 'Compilati.') : (currentLang() === 'en' ? 'Missing included services.' : 'Servizi inclusi mancanti.'));
+      addPreflightCheck(checks, nonEmpty(localized('services.excluded')) ? 'ok' : 'warn', currentLang() === 'en' ? 'Excluded services' : 'Servizi esclusi', nonEmpty(localized('services.excluded')) ? (currentLang() === 'en' ? 'Filled.' : 'Compilati.') : (currentLang() === 'en' ? 'Missing excluded services.' : 'Servizi esclusi mancanti.'));
+
+      if (isClientCopy) {
+        addPreflightCheck(checks, 'ok', currentLang() === 'en' ? 'Client PDF protection' : 'Protezione PDF cliente', currentLang() === 'en' ? 'B2B prices, margins and internal notes are blocked from the client copy.' : 'Prezzi B2B, margini e note interne sono bloccati nella copia cliente.');
+      } else {
+        addPreflightCheck(checks, 'ok', currentLang() === 'en' ? 'Internal / B2B copy' : 'Copia interna / B2B', currentLang() === 'en' ? 'Internal commercial fields allowed in this output.' : 'Campi commerciali interni ammessi in questo output.');
+      }
+
+      const blockers = checks.filter(item => item.status === 'blocker');
+      const warnings = checks.filter(item => item.status === 'warn');
+      const ok = checks.filter(item => item.status === 'ok');
+      return { copyMode, checks, blockers, warnings, ok, canProceed: blockers.length === 0 };
+    }
+
+    function renderPreflightStatus() {
+      const node = $('#preflightStatus');
+      if (!node) return;
+      const result = runPdfPreflight('client');
+      const L = preflightLocale();
+      node.className = `preflight-status ${result.blockers.length ? 'blocked' : result.warnings.length ? 'warn' : 'ok'}`;
+      node.innerHTML = `<strong>${escapeHtml(L.statusTitle)}</strong>${escapeHtml(result.blockers.length ? L.blocked : result.warnings.length ? L.warnings : L.ready)}<br><small>${escapeHtml(L.blocking)}: ${result.blockers.length} · ${escapeHtml(L.warning)}: ${result.warnings.length}</small>`;
+      const mainBtn = $('#downloadPdfBtn');
+      if (mainBtn) mainBtn.classList.toggle('blocked', result.blockers.length > 0);
+    }
+
+    function renderPreflightModal(result) {
+      const modal = $('#preflightModal');
+      const body = $('#preflightBody');
+      if (!modal || !body) return;
+      const L = preflightLocale();
+      $('#preflightTitle').textContent = L.title;
+      $('#preflightLead').textContent = L.lead + ' · ' + (result.copyMode === 'client' ? L.clientMode : L.internalMode);
+      $('#preflightCloseBtn2').textContent = L.close;
+      const icon = item => item.status === 'ok' ? '✓' : item.status === 'warn' ? '!' : '×';
+      const label = item => item.status === 'ok' ? L.ok : item.status === 'warn' ? L.warn : L.blocker;
+      body.innerHTML = `
+        <div class="preflight-summary">
+          <div class="preflight-pill"><strong>${result.ok.length}</strong>${escapeHtml(L.passed)}</div>
+          <div class="preflight-pill"><strong>${result.blockers.length}</strong>${escapeHtml(L.blocking)}</div>
+          <div class="preflight-pill"><strong>${result.warnings.length}</strong>${escapeHtml(L.warning)}</div>
+        </div>
+        <ul class="preflight-list">
+          ${result.checks.map(item => `<li class="preflight-item ${item.status === 'blocker' ? 'blocker' : item.status}"><span class="preflight-icon">${icon(item)}</span><span><strong>${escapeHtml(item.title)} · ${escapeHtml(label(item))}</strong><small>${escapeHtml(item.detail)}</small></span></li>`).join('')}
+        </ul>`;
+      modal.hidden = false;
+    }
+
+    function closePreflightModal() {
+      const modal = $('#preflightModal');
+      if (modal) modal.hidden = true;
+    }
+
+    function verifyBeforePdf(copyMode) {
+      const result = runPdfPreflight(copyMode || 'client');
+      renderPreflightStatus();
+      if (result.blockers.length) {
+        renderPreflightModal(result);
+        alert(preflightLocale().fixBlocking);
+        return false;
+      }
+      if (result.warnings.length && !confirm(preflightLocale().proceedWarnings)) {
+        renderPreflightModal(result);
+        return false;
+      }
+      return true;
+    }
+
     async function downloadPdf() {
+      if (!verifyBeforePdf('client')) return;
       const button = $('#downloadPdfBtn');
       button.disabled = true;
       announce(t('app.pdfLoading'));
@@ -7731,6 +8520,7 @@
     }
 
     async function downloadAdvisorB2bPdf() {
+      if (!verifyBeforePdf('agent_internal')) return;
       const button = $('#printBtn');
       button.disabled = true;
       announce(t('app.pdfLoading'));
@@ -7752,6 +8542,22 @@
       if (!window.html2canvas || !window.jspdf) throw new Error('PDF libraries unavailable');
     }
 
+
+    function assertClientPdfIsClean(article) {
+      const textContent = (article && article.innerText ? article.innerText : '').replace(/\s+/g, ' ').trim();
+      const exactInternalValues = [
+        state.partner && state.partner.commissionNote
+      ].filter(nonEmpty);
+      const forbiddenLabels = currentLang() === 'en'
+        ? ['B2B', 'Partner B2B price', 'Supplier net cost', 'HOAEXP margin', 'Partner margin', 'Total chain margin', 'Confidential', 'commission note']
+        : ['B2B', 'Prezzo partner B2B', 'Costo netto fornitore', 'Margine HOAEXP', 'Margine partner', 'Margine totale filiera', 'Confidenziale', 'commissione'];
+      const exactLeak = exactInternalValues.find(value => textContent.includes(String(value).trim()));
+      const labelLeak = forbiddenLabels.find(label => textContent.toLowerCase().includes(label.toLowerCase()));
+      if (exactLeak || labelLeak) {
+        throw new Error('Client PDF blocked: internal or B2B data detected in client-facing document.');
+      }
+    }
+
     async function savePdfCopy(copyMode, suffix) {
       const holder = document.createElement('div');
       holder.className = 'pdf-export-root';
@@ -7767,6 +8573,7 @@
       document.body.appendChild(holder);
       try {
         renderDocument(article, copyMode);
+        if (copyMode === 'client') assertClientPdfIsClean(article);
         await stabilizePdfExport(article);
         const pages = $$('.quote-page', article);
         const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true, hotfixes: ['px_scaling'] });
@@ -7806,6 +8613,9 @@
           canvas.width = 1;
           canvas.height = 1;
         }
+        const pdfBuffer = pdf.output('arraybuffer');
+        const pdfHash = await sha256ArrayBuffer(pdfBuffer);
+        updateAuditAfterPdf(copyMode, pdfHash);
         pdf.save(`${fileBaseName()}-${suffix}.pdf`);
       } finally {
         holder.remove();
@@ -7865,6 +8675,13 @@
           changed();
         }
       });
+      document.addEventListener('change', event => {
+        const target = event.target;
+        if (target.matches('select[data-bind]')) {
+          setPath(state, target.dataset.bind, target.value);
+          changed();
+        }
+      });
       $('#languageSelect').addEventListener('change', event => { state.settings.lang = event.target.value; render(); });
       $('#themeSelect').addEventListener('change', event => { state.settings.theme = event.target.value; render(); });
       $('#currency').addEventListener('change', event => { state.meta.currency = event.target.value; render(); });
@@ -7877,9 +8694,16 @@
       $('#refreshPreviewBtn').addEventListener('click', renderPreview);
       $('#printBtn').addEventListener('click', downloadAdvisorB2bPdf);
       $('#downloadPdfBtn').addEventListener('click', downloadPdf);
+      if ($('#preflightBtn')) $('#preflightBtn').addEventListener('click', () => renderPreflightModal(runPdfPreflight('client')));
+      if ($('#preflightCloseBtn')) $('#preflightCloseBtn').addEventListener('click', closePreflightModal);
+      if ($('#preflightCloseBtn2')) $('#preflightCloseBtn2').addEventListener('click', closePreflightModal);
+      if ($('#preflightModal')) $('#preflightModal').addEventListener('click', event => { if (event.target && event.target.id === 'preflightModal') closePreflightModal(); });
       if ($('#exportJsonBtn')) $('#exportJsonBtn').addEventListener('click', exportJson);
       if ($('#importJsonBtn')) $('#importJsonBtn').addEventListener('click', () => $('#importFile').click());
+      if ($('#removeImagesBtn')) $('#removeImagesBtn').addEventListener('click', removeAllHighlightImages);
+      if ($('#saveLightDraftBtn')) $('#saveLightDraftBtn').addEventListener('click', saveLightDraft);
       $('#importFile').addEventListener('change', event => { if (event.target.files && event.target.files[0]) importJson(event.target.files[0]); event.target.value = ''; });
+      window.addEventListener('beforeunload', () => { if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; writeStateNow(true); } });
       $('#demoBtn').addEventListener('click', loadDemo);
       $('#resetBtn').addEventListener('click', resetAll);
     }
