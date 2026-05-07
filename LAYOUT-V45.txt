@@ -1,0 +1,8 @@
+HOAEXP v45 - Catalog trip UX update
+
+Changes:
+- Area safari, catalog product and travel period fields are full-width for readability.
+- Adults 13+ years, children 2-11.99 years and infants 0-1.99 years are aligned on the same row.
+- Infants are non-paying travelers: they are stored and shown in the traveler summary, but never affect pricing logic.
+- Extra hotel position is full-width; extra room and room quantity are aligned underneath.
+- No pricing, PDF, archive, audit, security or catalog-rate logic was otherwise changed.

@@ -1654,6 +1654,70 @@
       }
     }
 
+
+    /* HOAEXP v45: Catalog trip form - clearer one-line fields and non-paying infants */
+    .catalog-config .catalog-panel {
+      width: 100% !important;
+    }
+    .catalog-fields {
+      grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+      gap: 22px 28px !important;
+      align-items: end !important;
+    }
+    .catalog-fields .catalog-area-field,
+    .catalog-fields .catalog-product-field,
+    .catalog-fields .catalog-season-field,
+    .catalog-fields .catalog-placement-field {
+      grid-column: 1 / -1 !important;
+    }
+    .catalog-fields .catalog-adults-field,
+    .catalog-fields .catalog-children-field,
+    .catalog-fields .catalog-infants-field {
+      grid-column: span 4 !important;
+    }
+    .catalog-fields .catalog-room-field {
+      grid-column: span 8 !important;
+    }
+    .catalog-fields .catalog-qty-field {
+      grid-column: span 4 !important;
+    }
+    .catalog-fields .catalog-area-field select,
+    .catalog-fields .catalog-product-field select,
+    .catalog-fields .catalog-season-field select,
+    .catalog-fields .catalog-placement-field select {
+      width: 100% !important;
+      max-width: none !important;
+    }
+    .catalog-fields .catalog-extra-check {
+      grid-column: 1 / -1 !important;
+      margin-top: 8px !important;
+      margin-bottom: 4px !important;
+    }
+    .catalog-fields .catalog-infants-field label::after {
+      content: " - no quota";
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: rgba(94, 88, 76, .72);
+      text-transform: none;
+    }
+    html[data-lang="it"] .catalog-fields .catalog-infants-field label::after {
+      content: " - non pagante";
+    }
+    @media (max-width: 980px) {
+      .catalog-fields .catalog-area-field,
+      .catalog-fields .catalog-product-field,
+      .catalog-fields .catalog-season-field,
+      .catalog-fields .catalog-adults-field,
+      .catalog-fields .catalog-children-field,
+      .catalog-fields .catalog-infants-field,
+      .catalog-fields .catalog-placement-field,
+      .catalog-fields .catalog-room-field,
+      .catalog-fields .catalog-qty-field {
+        grid-column: 1 / -1 !important;
+      }
+    }
+
   
 
     /* HOAEXP v40 Step 4 - final pre-PDF checklist and advisor validations */
@@ -2458,8 +2522,12 @@
                     <input id="catalogAdults" type="number" min="1" max="6" step="1" />
                   </div>
                   <div class="field catalog-children-field">
-                    <label for="catalogChildren" data-i18n="fields.catalogChildren">Bambini 2-11,99</label>
+                    <label for="catalogChildren" data-i18n="fields.catalogChildren">Bambini 2-11,99 anni</label>
                     <input id="catalogChildren" type="number" min="0" max="4" step="1" />
+                  </div>
+                  <div class="field catalog-infants-field">
+                    <label for="catalogInfants" data-i18n="fields.catalogInfants">Infanti 0-1,99 anni</label>
+                    <input id="catalogInfants" type="number" min="0" max="6" step="1" />
                   </div>
                   <div class="field inline-check catalog-extra-check">
                     <input id="catalogExtraDarNight" type="checkbox" />
@@ -2669,7 +2737,7 @@
           downloadPdf: 'Scarica PDF / copie', print: 'Scarica PDF B2B agente', preflight: 'Controllo PDF definitivo', archive: 'Archivio preventivi', exportJson: 'Esporta JSON', importJson: 'Importa JSON', demo: 'Carica demo', reset: 'Reset', prev: 'Indietro', next: 'Avanti', addHighlight: 'Aggiungi highlight', addDay: 'Aggiungi giorno', addDayBefore: 'Aggiungi prima', addDayAfter: 'Aggiungi dopo', addPrice: 'Aggiungi riga', applyCatalog: 'Applica prodotto catalogo', refresh: 'Aggiorna', remove: 'Rimuovi', removeImages: 'Rimuovi tutte le immagini', saveLightDraft: 'Salva bozza leggera'
         },
         fields: {
-          language: 'Lingua documento', theme: 'Tema interfaccia', quoteNo: 'Numero preventivo', baseCurrency: 'Valuta base', issueDate: 'Data emissione', validUntil: 'Valido fino al', quoteStatus: 'Stato preventivo', company: 'Azienda', contact: 'Referente', email: 'Email', phone: 'Telefono', website: 'Sito web', vat: 'VAT / Tax ID', address: 'Indirizzo', partnerNote: 'Nota interna partner / commissione - non visibile al cliente', internalUse: 'Uso interno', clientNotes: 'Note per il cliente', developmentMode: 'Modalità sviluppo', developmentFree: 'Sviluppo autonomo', developmentCatalog: 'Prodotto da catalogo', catalogArea: 'Area safari', catalogNorth: 'Nord Tanzania - Serengeti e circuiti settentrionali', catalogSouth: 'Sud Tanzania - Nyerere / Selous', catalogProduct: 'Prodotto catalogo', catalogSeason: 'Periodo tariffario', catalogAdults: 'Adulti', catalogChildren: 'Bambini 2-11,99', extraDarNight: 'Notte extra hotel pre/post safari', extraNightPlacement: 'Posizione notte extra', extraNightBefore: 'Prima del safari', extraNightAfter: 'Dopo il safari', extraNightBoth: 'Prima e dopo il safari', extraDarRoom: 'Camera hotel extra', extraDarQty: 'Numero camere', name: 'Nome', country: 'Paese', tripTitle: 'Titolo viaggio', tripSubtitle: 'Sottotitolo', destination: 'Destinazione', travelDates: 'Date viaggio', nights: 'Durata', travelers: 'Viaggiatori', style: 'Stile viaggio', preparedBy: 'Preparato da', intro: 'Introduzione', closing: 'Messaggio di chiusura', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', payment: 'Condizioni pagamento', cancellation: 'Cancellazione', validity: 'Validità e disponibilità', bank: 'Coordinate bancarie / istruzioni booking', taxNote: 'Nota fiscale / commerciale', footer: 'Footer documento', insurance: 'Assicurazione viaggio', bookingRequirements: 'Dati per prenotare', rowTitle: 'Titolo riga', qty: 'Quantità', currency: 'Valuta', internal: 'Costo netto fornitore', b2b: 'Prezzo partner B2B', b2c: 'Prezzo cliente B2C', day: 'Giorno', overnight: 'Pernottamento / area', meals: 'Pasti', description: 'Descrizione'
+          language: 'Lingua documento', theme: 'Tema interfaccia', quoteNo: 'Numero preventivo', baseCurrency: 'Valuta base', issueDate: 'Data emissione', validUntil: 'Valido fino al', quoteStatus: 'Stato preventivo', company: 'Azienda', contact: 'Referente', email: 'Email', phone: 'Telefono', website: 'Sito web', vat: 'VAT / Tax ID', address: 'Indirizzo', partnerNote: 'Nota interna partner / commissione - non visibile al cliente', internalUse: 'Uso interno', clientNotes: 'Note per il cliente', developmentMode: 'Modalità sviluppo', developmentFree: 'Sviluppo autonomo', developmentCatalog: 'Prodotto da catalogo', catalogArea: 'Area safari', catalogNorth: 'Nord Tanzania - Serengeti e circuiti settentrionali', catalogSouth: 'Sud Tanzania - Nyerere / Selous', catalogProduct: 'Prodotto catalogo', catalogSeason: 'Periodo di viaggio', catalogAdults: 'Adulti 13+ anni', catalogChildren: 'Bambini 2-11,99 anni', catalogInfants: 'Infanti 0-1,99 anni', extraDarNight: 'Notte extra hotel pre/post safari', extraNightPlacement: 'Posizione notte extra', extraNightBefore: 'Prima del safari', extraNightAfter: 'Dopo il safari', extraNightBoth: 'Prima e dopo il safari', extraDarRoom: 'Camera hotel extra', extraDarQty: 'Numero camere', name: 'Nome', country: 'Paese', tripTitle: 'Titolo viaggio', tripSubtitle: 'Sottotitolo', destination: 'Destinazione', travelDates: 'Date viaggio', nights: 'Durata', travelers: 'Viaggiatori', style: 'Stile viaggio', preparedBy: 'Preparato da', intro: 'Introduzione', closing: 'Messaggio di chiusura', included: 'Incluso', excluded: 'Escluso', optional: 'Opzionale', notes: 'Note operative', payment: 'Condizioni pagamento', cancellation: 'Cancellazione', validity: 'Validità e disponibilità', bank: 'Coordinate bancarie / istruzioni booking', taxNote: 'Nota fiscale / commerciale', footer: 'Footer documento', insurance: 'Assicurazione viaggio', bookingRequirements: 'Dati per prenotare', rowTitle: 'Titolo riga', qty: 'Quantità', currency: 'Valuta', internal: 'Costo netto fornitore', b2b: 'Prezzo partner B2B', b2c: 'Prezzo cliente B2C', day: 'Giorno', overnight: 'Pernottamento / area', meals: 'Pasti', description: 'Descrizione'
         },
         sections: {
           coreSettings: 'Impostazioni principali', sender: 'Emittente', partner: 'Agenzia / agente partner', client: 'Cliente finale', catalogMode: 'Sviluppo preventivo', catalogModeLead: 'Sviluppa il preventivo in autonomia oppure parti da un prodotto catalogo e perfezionalo per il cliente.', highlights: 'Highlights', highlightsLead: 'Inserisci fino a 5 highlights e associa un’immagine a ciascuno per valorizzare il viaggio.', textBlocks: 'Blocchi testuali', itinerary: 'Itinerario', itineraryLead: 'Aggiungi giornate, pernottamenti, pasti e descrizioni.', pricing: 'Pricing', pricingLead: 'Compila prezzo B2B e prezzo B2C. Nel workflow B2B vengono generate due copie: cliente e uso interno.', totals: 'Totali'
@@ -2724,7 +2792,7 @@
           downloadPdf: 'Download PDF / copies', print: 'Download advisor B2B PDF', preflight: 'Final PDF check', archive: 'Quote archive', exportJson: 'Export JSON', importJson: 'Import JSON', demo: 'Load demo', reset: 'Reset', prev: 'Back', next: 'Next', addHighlight: 'Add highlight', addDay: 'Add day', addDayBefore: 'Add before', addDayAfter: 'Add after', addPrice: 'Add row', applyCatalog: 'Apply catalog product', refresh: 'Refresh', remove: 'Remove', removeImages: 'Remove all images', saveLightDraft: 'Save light draft'
         },
         fields: {
-          language: 'Document language', theme: 'Interface theme', quoteNo: 'Quote number', baseCurrency: 'Base currency', issueDate: 'Issue date', validUntil: 'Valid until', quoteStatus: 'Quote status', company: 'Company', contact: 'Contact', email: 'Email', phone: 'Phone', website: 'Website', vat: 'VAT / Tax ID', address: 'Address', partnerNote: 'Internal partner / commission note - not visible to client', internalUse: 'Internal use', clientNotes: 'Client notes', developmentMode: 'Development mode', developmentFree: 'Build independently', developmentCatalog: 'Catalog product', catalogArea: 'Safari area', catalogNorth: 'Northern Tanzania - Serengeti and northern circuits', catalogSouth: 'Southern Tanzania - Nyerere / Selous', catalogProduct: 'Catalog product', catalogSeason: 'Rate period', catalogAdults: 'Adults', catalogChildren: 'Children 2-11.99', extraDarNight: 'Extra hotel night pre/post safari', extraNightPlacement: 'Extra night position', extraNightBefore: 'Before the safari', extraNightAfter: 'After the safari', extraNightBoth: 'Before and after the safari', extraDarRoom: 'Extra hotel room', extraDarQty: 'Number of rooms', name: 'Name', country: 'Country', tripTitle: 'Trip title', tripSubtitle: 'Subtitle', destination: 'Destination', travelDates: 'Travel dates', nights: 'Duration', travelers: 'Travelers', style: 'Travel style', preparedBy: 'Prepared by', intro: 'Introduction', closing: 'Closing message', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', payment: 'Payment terms', cancellation: 'Cancellation', validity: 'Validity and availability', bank: 'Bank details / booking instructions', taxNote: 'Tax / commercial note', footer: 'Document footer', insurance: 'Travel insurance', bookingRequirements: 'Booking requirements', rowTitle: 'Row title', qty: 'Quantity', currency: 'Currency', internal: 'Supplier net cost', b2b: 'Partner B2B price', b2c: 'Client B2C price', day: 'Day', overnight: 'Overnight / area', meals: 'Meals', description: 'Description'
+          language: 'Document language', theme: 'Interface theme', quoteNo: 'Quote number', baseCurrency: 'Base currency', issueDate: 'Issue date', validUntil: 'Valid until', quoteStatus: 'Quote status', company: 'Company', contact: 'Contact', email: 'Email', phone: 'Phone', website: 'Website', vat: 'VAT / Tax ID', address: 'Address', partnerNote: 'Internal partner / commission note - not visible to client', internalUse: 'Internal use', clientNotes: 'Client notes', developmentMode: 'Development mode', developmentFree: 'Build independently', developmentCatalog: 'Catalog product', catalogArea: 'Safari area', catalogNorth: 'Northern Tanzania - Serengeti and northern circuits', catalogSouth: 'Southern Tanzania - Nyerere / Selous', catalogProduct: 'Catalog product', catalogSeason: 'Travel period', catalogAdults: 'Adults 13+ years', catalogChildren: 'Children 2-11.99 years', catalogInfants: 'Infants 0-1.99 years', extraDarNight: 'Extra hotel night pre/post safari', extraNightPlacement: 'Extra night position', extraNightBefore: 'Before the safari', extraNightAfter: 'After the safari', extraNightBoth: 'Before and after the safari', extraDarRoom: 'Extra hotel room', extraDarQty: 'Number of rooms', name: 'Name', country: 'Country', tripTitle: 'Trip title', tripSubtitle: 'Subtitle', destination: 'Destination', travelDates: 'Travel dates', nights: 'Duration', travelers: 'Travelers', style: 'Travel style', preparedBy: 'Prepared by', intro: 'Introduction', closing: 'Closing message', included: 'Included', excluded: 'Excluded', optional: 'Optional', notes: 'Operational notes', payment: 'Payment terms', cancellation: 'Cancellation', validity: 'Validity and availability', bank: 'Bank details / booking instructions', taxNote: 'Tax / commercial note', footer: 'Document footer', insurance: 'Travel insurance', bookingRequirements: 'Booking requirements', rowTitle: 'Row title', qty: 'Quantity', currency: 'Currency', internal: 'Supplier net cost', b2b: 'Partner B2B price', b2c: 'Client B2C price', day: 'Day', overnight: 'Overnight / area', meals: 'Meals', description: 'Description'
         },
         sections: {
           coreSettings: 'Core settings', sender: 'Sender', partner: 'Partner agency / advisor', client: 'Final client', catalogMode: 'Quote development', catalogModeLead: 'Build the quote independently or start from a catalog product and refine it for the client.', highlights: 'Highlights', highlightsLead: 'Add up to 5 highlights and match each one with an image to enhance the journey.', textBlocks: 'Text blocks', itinerary: 'Itinerary', itineraryLead: 'Add days, overnights, meals and descriptions.', pricing: 'Pricing', pricingLead: 'Fill B2B and B2C prices. In the B2B workflow, two copies are generated: client-facing and internal use.', totals: 'Totals'
@@ -2810,7 +2878,7 @@
       sender: { ...HOAEXP_FIXED },
       partner: { company: '', contact: '', email: '', phone: '', commissionNote: '' },
       client: { name: '', email: '', phone: '', country: '', notes: { it: '', en: '' } },
-      catalog: { mode: 'free', area: 'south', productId: 'smart-safari-car', seasonId: 'default', adults: 2, children: 0, extraDarNight: false, extraDarRoomId: 'superior-double', extraDarQty: 1, extraDarPlacement: 'before', catalogVersion: '2026.2027.1', rateVersion: '2026.2027.1' },
+      catalog: { mode: 'free', area: 'south', productId: 'smart-safari-car', seasonId: 'default', adults: 2, children: 0, infants: 0, extraDarNight: false, extraDarRoomId: 'superior-double', extraDarQty: 1, extraDarPlacement: 'before', catalogVersion: '2026.2027.1', rateVersion: '2026.2027.1' },
       trip: {
         title: { it: 'Safari su misura in Tanzania', en: 'Tailor-made Tanzania Safari' },
         subtitle: { it: 'Una proposta costruita per trasformare il viaggio in esperienza memorabile.', en: 'A proposal designed to turn the journey into a memorable experience.' },
@@ -7022,6 +7090,7 @@
       if (!currentExtraRooms.some(room => room.id === state.catalog.extraDarRoomId)) state.catalog.extraDarRoomId = catalogExtraDefaultRoom(selectedCatalogProduct()).id;
       state.catalog.adults = Math.max(1, Math.min(6, Number(state.catalog.adults || 1)));
       state.catalog.children = Math.max(0, Math.min(4, Number(state.catalog.children || 0)));
+      state.catalog.infants = Math.max(0, Math.min(6, Number(state.catalog.infants || 0)));
       state.catalog.extraDarQty = Math.max(1, Math.min(6, Number(state.catalog.extraDarQty || 1)));
       if (!Array.isArray(state.prices)) state.prices = [];
       state.prices = state.prices.filter(row => !isManagementFeeRow(row));
@@ -7426,12 +7495,13 @@
       const childFieldLabel = document.querySelector('label[for="catalogChildren"]');
       if (childFieldLabel) {
         const childAge = product.sharedSafari && product.childAgeLabel ? localizedValue(product.childAgeLabel) : (currentLang() === 'en' ? '2-11.99' : '2-11,99');
-        childFieldLabel.textContent = currentLang() === 'en' ? `Children ${childAge}` : `Bambini ${childAge}`;
+        childFieldLabel.textContent = currentLang() === 'en' ? `Children ${childAge} years` : `Bambini ${childAge} anni`;
       }
       if (!product.seasons.some(season => season.id === catalog.seasonId)) catalog.seasonId = product.seasons[0].id;
       $('#catalogSeason').innerHTML = product.seasons.map(season => `<option value="${season.id}" ${season.id === catalog.seasonId ? 'selected' : ''}>${escapeHtml(localizedValue(season.label))}</option>`).join('');
       $('#catalogAdults').value = catalog.adults || 1;
       $('#catalogChildren').value = catalog.children || 0;
+      $('#catalogInfants').value = catalog.infants || 0;
       const extraHotelEnabled = product.extraHotelEnabled !== false;
       if (!extraHotelEnabled) catalog.extraDarNight = false;
       ['.catalog-extra-check', '.catalog-placement-field', '.catalog-room-field', '.catalog-qty-field'].forEach(selector => {
@@ -7465,16 +7535,16 @@
     }
 
     function bindCatalogEvents() {
-      const ids = ['developmentMode', 'catalogArea', 'catalogProduct', 'catalogSeason', 'catalogAdults', 'catalogChildren', 'catalogExtraNightPlacement', 'catalogExtraDarRoom', 'catalogExtraDarQty'];
+      const ids = ['developmentMode', 'catalogArea', 'catalogProduct', 'catalogSeason', 'catalogAdults', 'catalogChildren', 'catalogInfants', 'catalogExtraNightPlacement', 'catalogExtraDarRoom', 'catalogExtraDarQty'];
       ids.forEach(id => {
         const node = $('#' + id);
         if (!node) return;
         node.addEventListener('change', () => {
           const keyMap = {
-            developmentMode: 'mode', catalogArea: 'area', catalogProduct: 'productId', catalogSeason: 'seasonId', catalogAdults: 'adults', catalogChildren: 'children', catalogExtraNightPlacement: 'extraDarPlacement', catalogExtraDarRoom: 'extraDarRoomId', catalogExtraDarQty: 'extraDarQty'
+            developmentMode: 'mode', catalogArea: 'area', catalogProduct: 'productId', catalogSeason: 'seasonId', catalogAdults: 'adults', catalogChildren: 'children', catalogInfants: 'infants', catalogExtraNightPlacement: 'extraDarPlacement', catalogExtraDarRoom: 'extraDarRoomId', catalogExtraDarQty: 'extraDarQty'
           };
           const key = keyMap[id];
-          state.catalog[key] = ['adults', 'children', 'extraDarQty'].includes(key) ? Number(node.value || 0) : node.value;
+          state.catalog[key] = ['adults', 'children', 'infants', 'extraDarQty'].includes(key) ? Number(node.value || 0) : node.value;
           if (key === 'area') {
             const nextProduct = firstCatalogProductForArea(state.catalog.area);
             resetCatalogProductOptions(nextProduct);
@@ -7487,8 +7557,8 @@
           render();
         });
         node.addEventListener('input', () => {
-          if (!['catalogAdults', 'catalogChildren', 'catalogExtraDarQty'].includes(id)) return;
-          const keyMap = { catalogAdults: 'adults', catalogChildren: 'children', catalogExtraDarQty: 'extraDarQty' };
+          if (!['catalogAdults', 'catalogChildren', 'catalogInfants', 'catalogExtraDarQty'].includes(id)) return;
+          const keyMap = { catalogAdults: 'adults', catalogChildren: 'children', catalogInfants: 'infants', catalogExtraDarQty: 'extraDarQty' };
           state.catalog[keyMap[id]] = Number(node.value || 0);
           if (id === 'catalogExtraDarQty') syncCatalogExtraHotelSelection();
           changed();
@@ -7711,9 +7781,12 @@
       state.trip.destination = product.destination;
       const extraNights = state.catalog.extraDarNight ? catalogExtraNightCount() : 0;
       state.trip.nights = extraNights ? (currentLang() === 'en' ? `${localizedValue(product.duration)} + ${extraNights} extra hotel night${extraNights > 1 ? 's' : ''}` : `${localizedValue(product.duration)} + ${extraNights} notte extra hotel`) : localizedValue(product.duration);
+      const infantCount = Math.max(0, Number(state.catalog.infants || 0));
+      const infantLabelIt = infantCount === 1 ? 'infante' : 'infanti';
+      const infantLabelEn = infantCount === 1 ? 'infant' : 'infants';
       state.trip.travelers = currentLang() === 'en'
-        ? `${state.catalog.adults || 0} adults${state.catalog.children ? ` + ${state.catalog.children} children` : ''}`
-        : `${state.catalog.adults || 0} adulti${state.catalog.children ? ` + ${state.catalog.children} bambini` : ''}`;
+        ? `${state.catalog.adults || 0} adults${state.catalog.children ? ` + ${state.catalog.children} children` : ''}${infantCount ? ` + ${infantCount} ${infantLabelEn}` : ''}`
+        : `${state.catalog.adults || 0} adulti${state.catalog.children ? ` + ${state.catalog.children} bambini` : ''}${infantCount ? ` + ${infantCount} ${infantLabelIt}` : ''}`;
       state.trip.style = product.sharedSafari ? (currentLang() === 'en' ? 'Shared safari' : 'Safari condiviso') : 'Private safari';
       state.trip.intro = {
         it: `${catalogProductName(product)} è una base di partenza già strutturata dal catalogo HOAEXP, ora adattabile ai desideri del cliente, alle date richieste e alla disponibilità reale dei servizi.`,
@@ -9221,6 +9294,8 @@ ${currentSensitiveJsonWarning()}`);
       const children = Number(state.catalog && state.catalog.children || 0);
       addPreflightCheck(checks, adults >= 1 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Adults' : 'Adulti', adults >= 1 ? String(adults) : (currentLang() === 'en' ? 'At least one adult is required.' : 'Serve almeno un adulto.'));
       addPreflightCheck(checks, children >= 0 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Children' : 'Bambini', children >= 0 ? String(children) : (currentLang() === 'en' ? 'Children cannot be negative.' : 'Il numero bambini non può essere negativo.'));
+      const infants = Number(state.catalog && state.catalog.infants || 0);
+      addPreflightCheck(checks, infants >= 0 ? 'ok' : 'blocker', currentLang() === 'en' ? 'Infants' : 'Infanti', infants >= 0 ? String(infants) : (currentLang() === 'en' ? 'Infants cannot be negative.' : 'Il numero infanti non può essere negativo.'));
 
       if (state.catalog && state.catalog.mode === 'catalog') {
         addPreflightCheck(checks, !!product ? 'ok' : 'blocker', currentLang() === 'en' ? 'Catalog product' : 'Prodotto catalogo', product ? ((product.title && (product.title[lang] || product.title.it || product.title.en)) || product.id) : (currentLang() === 'en' ? 'Select a valid catalog product.' : 'Selezionare un prodotto catalogo valido.'));
