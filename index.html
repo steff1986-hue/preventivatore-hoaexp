@@ -2447,25 +2447,35 @@
     width: 100% !important;
   }
   /* Harmonize the logo proportions in the PDF and UI */
+  /*
+    The HOAEXP logo used in the PDF generation is intentionally wider than it is tall.
+    To preserve its aspect ratio we avoid forcing a square container. Instead we rely on
+    `object-fit: contain` to scale the image within a rectangular container. The width
+    and height below match the v20 styling (43mm x 16mm) and are applied in all media
+    contexts, including print. Removing the square override prevents the logo from
+    appearing stretched in the final PDF.
+  */
   .doc-brand-mark {
-    /* Ensure the logo remains square and uses its natural aspect ratio */
-    width: 30mm !important;
-    height: 30mm !important;
-    aspect-ratio: 1 / 1 !important;
+    width: 43mm !important;
+    height: 16mm !important;
+    max-width: 43mm !important;
+    max-height: 16mm !important;
     object-fit: contain !important;
-    flex: 0 0 30mm !important;
+    object-position: center center !important;
+    flex: 0 0 43mm !important;
+    aspect-ratio: auto !important;
   }
 
-  /* When printing, reinforce the square ratio to override any print-specific
-     dimension rules defined earlier in the stylesheet. Without this rule the
-     PDF cover may distort the logo. */
   @media print {
     .doc-brand-mark {
-      width: 30mm !important;
-      height: 30mm !important;
-      aspect-ratio: 1 / 1 !important;
+      width: 43mm !important;
+      height: 16mm !important;
+      max-width: 43mm !important;
+      max-height: 16mm !important;
       object-fit: contain !important;
-      flex: 0 0 30mm !important;
+      object-position: center center !important;
+      flex: 0 0 43mm !important;
+      aspect-ratio: auto !important;
     }
   }
 
@@ -8658,7 +8668,8 @@
       const img = document.createElement('img');
       img.className = 'doc-brand-mark';
       // Use the external logo file for the PDF generation instead of the inline data URI.
-      img.src = 'logo.png';
+      // Use the wide version of the logo when generating the PDF to avoid distortion.
+      img.src = 'logo_wide.png';
       img.alt = 'HOAEXP';
       return img;
     }
