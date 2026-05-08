@@ -2405,6 +2405,40 @@
   .sidebar > .hint[data-i18n="app.storageNote"] {
     display: none !important;
   }
+
+  /* Optimize hero layout to reduce empty space and improve alignment */
+  .hero {
+    /* Reduce padding and narrow the gap between columns */
+    padding: 12px 16px !important;
+    /* Use a flexible left column and an auto-sized right column to minimize wasted space */
+    grid-template-columns: 2fr 1fr !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+  .hero h2 {
+    /* Shrink heading size and margins for a more compact look */
+    font-size: clamp(1.6rem, 2.4vw, 2.6rem) !important;
+    margin: 2px 0 6px !important;
+    max-width: 20ch !important;
+  }
+  .hero p {
+    margin: 0 !important;
+  }
+  .status-card {
+    /* Further reduce padding for the status card */
+    padding: 12px !important;
+    /* Constrain the width so it doesn't occupy too much horizontal space */
+    max-width: 320px !important;
+    width: 100% !important;
+  }
+  .status-card strong {
+    margin-bottom: 4px !important;
+  }
+  .status-card ul {
+    margin: 4px 0 0 !important;
+    padding-left: 14px !important;
+    line-height: 1.4 !important;
+  }
   </style>
 </head>
 <body>
