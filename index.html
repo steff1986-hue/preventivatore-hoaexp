@@ -2446,6 +2446,53 @@
     max-width: 320px !important;
     width: 100% !important;
   }
+  /* Harmonize the logo proportions in the PDF and UI */
+  .doc-brand-mark {
+    /* Ensure the logo remains square and uses its natural aspect ratio */
+    width: 30mm !important;
+    height: 30mm !important;
+    aspect-ratio: 1 / 1;
+    object-fit: contain !important;
+    flex: 0 0 30mm;
+  }
+
+  /* === Archive palette customization to match HOAEXP brand === */
+  /* Soften the backdrop tint for the archive modal */
+  .archive-modal {
+    background: rgba(0, 51, 51, 0.54) !important;
+  }
+  /* Refine the appearance of the archive box */
+  .archive-modal .archive-box {
+    background: var(--panel-2) !important;
+    border-color: var(--line) !important;
+  }
+  /* Apply a subtle branded gradient to the archive header */
+  .archive-modal .archive-head {
+    background: linear-gradient(135deg, rgba(0, 107, 112, .15), rgba(214, 163, 93, .15)) !important;
+  }
+  /* Use a clean surface for table cells */
+  .archive-modal .archive-table td {
+    background: var(--panel-2) !important;
+  }
+  /* Colour header text with the primary brand colour */
+  .archive-modal .archive-table th {
+    color: var(--brand) !important;
+  }
+  /* Style KPI chips to be consistent with the panel */
+  .archive-modal .archive-kpi span {
+    background: var(--panel-2) !important;
+    border-color: var(--line) !important;
+    color: var(--text) !important;
+  }
+  /* Provide distinct styling for action buttons within the archive */
+  .archive-modal .archive-actions .btn.small {
+    background: var(--brand) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--brand-2) !important;
+  }
+  .archive-modal .archive-actions .btn.small:hover {
+    background: var(--brand-2) !important;
+  }
   .status-card strong {
     margin-bottom: 4px !important;
   }
@@ -8960,6 +9007,8 @@
         created_by: state.meta.createdBy || state.meta.preparedBy || 'agent_id',
         trigger,
         note: archiveLocale().storedWithoutImages,
+        // Include the remote URL of the generated PDF if available
+        pdf_remote_url: (state.meta && state.meta.remoteUrl) ? state.meta.remoteUrl : '',
         snapshot
       };
     }
@@ -9088,6 +9137,8 @@
       state = mergeDeep(defaultState(), record.snapshot);
       currentStep = 0;
       try {
+        // Indicate that this is an archive PDF download to avoid re-uploading the PDF
+        window.isArchivePdfDownload = true;
         await ensurePdfLibraries();
         // Generate only the client copy; suffix uses the quote number or a generic name
         const suffix = record.quote_no && record.quote_no.trim() ? record.quote_no.trim().replace(/\s+/g, '_') : 'ARCHIVE';
@@ -9098,6 +9149,8 @@
           ? 'PDF generation failed for the archived quote.'
           : 'Generazione PDF non riuscita per il preventivo archiviato.');
       } finally {
+        // Reset the flag to allow uploads during normal PDF generation
+        window.isArchivePdfDownload = false;
         // Restore original state and UI
         state = previousState;
         currentStep = previousStep;
@@ -9229,6 +9282,30 @@ ${currentSensitiveJsonWarning()}`);
       document.body.appendChild(a);
       a.click();
       setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    }
+
+    /**
+     * Upload a PDF blob to the remote server via the upload.php script.
+     * This function sends a POST request with the PDF in a FormData field named "file"
+     * and returns true if the server responds with a successful status code.
+     * Replace the URL below with your actual upload endpoint if it changes.
+     * @param {Blob} pdfBlob The PDF blob to upload
+     * @param {string} fileName The file name to send to the server
+     * @returns {Promise<boolean>} True if upload succeeded, false otherwise
+     */
+    async function uploadPdfToServer(pdfBlob, fileName) {
+      const formData = new FormData();
+      formData.append('file', pdfBlob, fileName);
+      try {
+        const response = await fetch('https://preventivi.africa-safari.it/upload.php', {
+          method: 'POST',
+          body: formData
+        });
+        return response.ok;
+      } catch (error) {
+        console.warn('Upload to server failed', error);
+        return false;
+      }
     }
 
     function activeCatalogVersion() {
@@ -9547,6 +9624,8 @@ ${currentSensitiveJsonWarning()}`);
 
     async function downloadPdf() {
       ensureCurrentDraftQuoteNumber();
+      // Reset remoteUrl so that a fresh URL is set after uploading the new PDF
+      if (state.meta) state.meta.remoteUrl = '';
       saveState(false);
       if (!verifyBeforePdf('client')) return;
       const button = $('#downloadPdfBtn');
@@ -9573,6 +9652,8 @@ ${currentSensitiveJsonWarning()}`);
 
     async function downloadAdvisorB2bPdf() {
       ensureCurrentDraftQuoteNumber();
+      // Reset remoteUrl so that advisor-only PDFs do not retain previous upload information
+      if (state.meta) state.meta.remoteUrl = '';
       saveState(false);
       if (!verifyBeforePdf('agent_internal')) return;
       const button = $('#printBtn');
@@ -9671,7 +9752,24 @@ ${currentSensitiveJsonWarning()}`);
         const pdfBuffer = pdf.output('arraybuffer');
         const pdfHash = await sha256ArrayBuffer(pdfBuffer);
         updateAuditAfterPdf(copyMode, pdfHash);
-        pdf.save(`${fileBaseName()}-${suffix}.pdf`);
+        const finalFileName = `${fileBaseName()}-${suffix}.pdf`;
+        // Obtain a Blob so we can upload the generated PDF to a remote server
+        const pdfBlob = pdf.output('blob');
+        if (copyMode === 'client' && !(window && window.isArchivePdfDownload)) {
+          try {
+            const uploadOk = await uploadPdfToServer(pdfBlob, finalFileName);
+            if (uploadOk) {
+              // Compose the absolute URL and store it in state.meta for later use
+              const baseUrl = 'https://preventivi.africa-safari.it/';
+              state.meta = state.meta || {};
+              state.meta.remoteUrl = baseUrl + encodeURIComponent(finalFileName);
+            }
+          } catch (uploadError) {
+            console.warn('PDF upload failed', uploadError);
+            if (state.meta) state.meta.remoteUrl = '';
+          }
+        }
+        pdf.save(finalFileName);
       } finally {
         holder.remove();
       }
