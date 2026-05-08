@@ -2451,9 +2451,22 @@
     /* Ensure the logo remains square and uses its natural aspect ratio */
     width: 30mm !important;
     height: 30mm !important;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1 !important;
     object-fit: contain !important;
-    flex: 0 0 30mm;
+    flex: 0 0 30mm !important;
+  }
+
+  /* When printing, reinforce the square ratio to override any print-specific
+     dimension rules defined earlier in the stylesheet. Without this rule the
+     PDF cover may distort the logo. */
+  @media print {
+    .doc-brand-mark {
+      width: 30mm !important;
+      height: 30mm !important;
+      aspect-ratio: 1 / 1 !important;
+      object-fit: contain !important;
+      flex: 0 0 30mm !important;
+    }
   }
 
   /* === Archive palette customization to match HOAEXP brand === */
@@ -7813,7 +7826,25 @@
         rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 2 camere, 1 veicolo`, en: `${productName} - Adult in double, 2 rooms, 1 vehicle` }, rates.adultDouble2, 4, seasonNote));
         rows.push(catalogLine(children > 0 ? { it: `${productName} - 3° bambino in doppia`, en: `${productName} - 3rd child in double` } : { it: `${productName} - 3° adulto in doppia`, en: `${productName} - 3rd adult in double` }, children > 0 ? rates.childThird : rates.adultThird, 1, seasonNote));
       } else {
-        rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 3 camere, 1 veicolo`, en: `${productName} - Adult in double, 3 rooms, 1 vehicle` }, rates.adultDouble3, Math.min(total, 6), seasonNote));
+        // When there are six or more travellers (adults + children), the legacy logic
+        // applied the adultDouble3 rate uniformly to all passengers. This caused
+        // children to be billed at the full adult rate even when a child-specific
+        // price exists (rates.childThird). To restore correct pricing for mixed
+        // groups, split the rows between adults and children when at least one
+        // child is present. Adults are charged the adultDouble3 rate and children
+        // are charged the childThird rate. If there are no children, fall back
+        // to the original behaviour (all adults).
+        if (children > 0) {
+          if (adults > 0) {
+            rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 3 camere, 1 veicolo`, en: `${productName} - Adult in double, 3 rooms, 1 vehicle` }, rates.adultDouble3, adults, seasonNote));
+          }
+          // Label matches other child rows (see total === 5 case) to indicate
+          // the third/fourth child in a double room. Note: youths aged 12 and
+          // above must be entered as adults.
+          rows.push(catalogLine({ it: `${productName} - 3° bambino in doppia`, en: `${productName} - 3rd child in double` }, rates.childThird, children, seasonNote));
+        } else {
+          rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 3 camere, 1 veicolo`, en: `${productName} - Adult in double, 3 rooms, 1 vehicle` }, rates.adultDouble3, Math.min(total, 6), seasonNote));
+        }
       }
       if (catalog.extraDarNight && product.extraHotelEnabled !== false) {
         const hotel = catalogExtraHotel(product);
