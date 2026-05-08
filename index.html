@@ -2674,6 +2674,12 @@
               <div class="field"><label data-i18n="fields.email" for="clientEmail">Email</label><input id="clientEmail" data-bind="client.email" /></div>
               <div class="field"><label data-i18n="fields.phone" for="clientPhone">Telefono</label><input id="clientPhone" data-bind="client.phone" /></div>
               <div class="field full"><label data-i18n="fields.clientNotes" for="clientNotes">Note per il cliente</label><textarea id="clientNotes" data-localized="client.notes"></textarea></div>
+              <!-- Button to search for an existing client in the HOAEXP CRM -->
+              <div class="field full">
+                <button type="button" id="clientSearchBtn" class="btn small" style="margin-top: 4px;" onclick="promptSearchClient()">
+                  Cerca cliente esistente
+                </button>
+              </div>
             </div>
           </div>
 
@@ -9682,6 +9688,13 @@ ${currentSensitiveJsonWarning()}`);
           await savePdfCopy('client', 'CLIENTE');
         }
         saveGeneratedQuoteToArchive('download_pdf');
+        // Automatically save the client record to the HOAEXP CRM. This will
+        // persist the client details on the server and return a remote id.
+        try {
+          await saveClientToCRM();
+        } catch (err) {
+          console.warn('Failed to save client to CRM', err);
+        }
         announce(t('app.pdfReady'));
       } catch (error) {
         console.warn(error);
@@ -9719,6 +9732,80 @@ ${currentSensitiveJsonWarning()}`);
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
       if (!window.html2canvas || !window.jspdf) throw new Error('PDF libraries unavailable');
     }
+
+  /**
+   * Save the current client details to the HOAEXP CRM on the server. This
+   * function collects the fields defined in state.client and sends them
+   * as JSON to the remote endpoint. If a client with the same email
+   * already exists, the server returns the existing record. The returned
+   * object contains an 'id' field which we use to update state.client.id.
+   * Note: this function will not throw on failure; errors are logged to
+   * the console.
+   */
+  async function saveClientToCRM() {
+    const client = state && state.client ? state.client : null;
+    if (!client || !client.email) return;
+    const payload = {
+      name: client.name || '',
+      country: client.country || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      note: client.notes || ''
+    };
+    try {
+      const response = await fetch('https://preventivi.africa-safari.it/clients.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data && data.id) {
+        // Update state with remote id so that subsequent calls know it was saved
+        client.id = data.id;
+      }
+    } catch (err) {
+      console.warn('CRM save error', err);
+    }
+  }
+
+  /**
+   * Prompt the user to search for an existing client in the HOAEXP CRM. This
+   * helper uses browser prompts to keep the UI minimal. The user is first
+   * asked for a search term (e.g. name or email). If results are found,
+   * another prompt asks which client number to load. The selected client's
+   * details are then applied to the current state and the UI is re-rendered.
+   */
+  async function promptSearchClient() {
+    const query = window.prompt('Cerca cliente per nome o email:');
+    if (!query) return;
+    try {
+      const response = await fetch('https://preventivi.africa-safari.it/clients.php?query=' + encodeURIComponent(query));
+      if (!response.ok) throw new Error('HTTP error');
+      const results = await response.json();
+      if (!Array.isArray(results) || results.length === 0) {
+        window.alert('Nessun cliente trovato.');
+        return;
+      }
+      const options = results.map((c, idx) => `${idx + 1}) ${c.name || ''} <${c.email || ''}>`).join('\n');
+      const choice = window.prompt('Seleziona il cliente (numero):\n' + options);
+      const index = parseInt(choice, 10) - 1;
+      const selected = results[index];
+      if (!selected) return;
+      // Apply selected client details
+      state.client = state.client || {};
+      state.client.name = selected.name || '';
+      state.client.country = selected.country || '';
+      state.client.email = selected.email || '';
+      state.client.phone = selected.phone || '';
+      state.client.id = selected.id || '';
+      // Re-render the UI to reflect changes in the form fields
+      if (typeof render === 'function') render();
+    } catch (err) {
+      console.warn('CRM search error', err);
+      window.alert('Si è verificato un errore durante la ricerca del cliente.');
+    }
+  }
 
 
     function assertClientPdfIsClean(article) {
