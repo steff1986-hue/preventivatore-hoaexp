@@ -2424,6 +2424,21 @@
   .hero p {
     margin: 0 !important;
   }
+
+  /* Style archive button to be solid instead of transparent */
+  .btn.archive-btn {
+    background: var(--panel-2) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text) !important;
+  }
+  .btn.archive-btn:hover {
+    background: var(--panel) !important;
+  }
+  /* Hide the quote status field from core settings */
+  label[for="quoteStatus"],
+  #quoteStatus {
+    display: none !important;
+  }
   .status-card {
     /* Further reduce padding for the status card */
     padding: 12px !important;
@@ -8776,7 +8791,7 @@
       const en = currentLang() === 'en';
       return {
         title: en ? 'Generated quote archive' : 'Archivio preventivi generati',
-        lead: en ? 'Local archive saved in this browser. Download a JSON copy or reopen a quote.' : 'Archivio locale salvato in questo browser. Puoi scaricare una copia JSON o riaprire un preventivo.',
+        lead: en ? 'Local archive saved in this browser. Download a PDF copy or reopen a quote.' : 'Archivio locale salvato in questo browser. Puoi scaricare una copia PDF o riaprire un preventivo.',
         refresh: en ? 'Refresh' : 'Aggiorna',
         clear: en ? 'Clear archive' : 'Svuota archivio',
         empty: en ? 'No generated quotes saved yet. Generate a PDF to archive the quote automatically.' : 'Nessun preventivo generato salvato. Genera un PDF per archiviare automaticamente il preventivo.',
@@ -8790,7 +8805,7 @@
         totalValue: en ? 'Total' : 'Totale',
         savedAt: en ? 'Saved' : 'Salvato',
         actions: en ? 'Actions' : 'Azioni',
-        download: en ? 'Download JSON' : 'Scarica JSON',
+        download: en ? 'Download PDF' : 'Scarica PDF',
         reopen: en ? 'Reopen' : 'Riapri',
         delete: en ? 'Delete' : 'Elimina',
         confirmLoad: en ? 'Reopen this quote? Current draft will remain in browser autosave until overwritten.' : 'Riaprire questo preventivo? La bozza corrente resta nell’autosave browser finché non viene sovrascritta.',
@@ -8886,6 +8901,39 @@
       }
     }
 
+    /**
+     * Build a <select> element for editing a quote's status in the archive. The select
+     * contains all statuses defined in QUOTE_STATUSES and selects the current status.
+     * @param {Object} record Archive record object
+     * @param {Object} statusLabels Mapping of status values to localized labels
+     * @returns {string} HTML string of the select element
+     */
+    function buildArchiveStatusSelect(record, statusLabels) {
+      return '<select class="archive-status-select" data-id="' + escapeHtml(record.id) + '">' +
+        QUOTE_STATUSES.map(function (s) {
+          return '<option value="' + escapeHtml(s) + '"' + (record.status === s ? ' selected' : '') + '>' + escapeHtml(statusLabels[s] || s) + '</option>';
+        }).join('') +
+        '</select>';
+    }
+
+    /**
+     * Update the status of a record in the quote archive and re-render the archive modal.
+     * @param {string} id Identifier of the record to update
+     * @param {string} newStatus New status value
+     */
+    function updateArchiveRecordStatus(id, newStatus) {
+      const archive = loadQuoteArchive();
+      const record = (archive.records || []).find(function (item) {
+        return item && item.id === id;
+      });
+      if (record) {
+        record.status = newStatus || record.status;
+        saveQuoteArchive(archive);
+        renderQuoteArchiveModal();
+        renderArchiveButton();
+      }
+    }
+
     function archiveRecordTotal() {
       const totals = calculateTotals();
       return state.settings.workflow === 'b2b' ? totals.b2c : totals.b2c;
@@ -8975,7 +9023,7 @@
               <td><div class="archive-title">${escapeHtml(record.quote_no || 'N/D')}</div><div class="archive-sub">${escapeHtml(record.catalog_product_name || record.catalog_product_id || 'Custom')}</div></td>
               <td>${escapeHtml(record.client || 'N/D')}</td>
               <td>${escapeHtml(record.workflow_label || record.workflow || '')}</td>
-              <td>${escapeHtml(statusLabels[record.status] || record.status || '')}</td>
+              <td>${buildArchiveStatusSelect(record, statusLabels)}</td>
               <td>${escapeHtml(money(record.total_b2c || 0, record.currency || 'EUR'))}</td>
               <td>${escapeHtml(formatArchiveDate(record.saved_at || record.generated_at))}<div class="archive-sub">${escapeHtml(record.note || '')}</div></td>
               <td><div class="archive-actions">
@@ -8985,6 +9033,12 @@
               </div></td>
             </tr>`).join('')}</tbody>
         </table>`;
+      // After inserting the table, wire up status change listeners for editable status fields
+      body.querySelectorAll('.archive-status-select').forEach(function (select) {
+        select.addEventListener('change', function (event) {
+          updateArchiveRecordStatus(this.dataset.id, this.value);
+        });
+      });
     }
 
     function formatArchiveDate(value) {
@@ -9016,6 +9070,39 @@
       payload._hoaexp_archive_record = { ...record, snapshot: undefined };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       downloadBlob(blob, `${record.quote_no || 'HOAEXP-quote'}-ARCHIVE.json`);
+    }
+
+    /**
+     * Generate and download a PDF for a selected archive record. This function temporarily
+     * loads the record snapshot into the current state, renders the document and
+     * invokes the PDF generator, then restores the original state. Only the client
+     * copy of the PDF is generated for download and the archive is not modified.
+     * @param {string} id Identifier of the archive record to export
+     */
+    async function downloadArchivePdf(id) {
+      const record = archiveRecordById(id);
+      if (!record || !record.snapshot) return;
+      const previousState = state;
+      const previousStep = currentStep;
+      // Clone the record snapshot into a fresh state
+      state = mergeDeep(defaultState(), record.snapshot);
+      currentStep = 0;
+      try {
+        await ensurePdfLibraries();
+        // Generate only the client copy; suffix uses the quote number or a generic name
+        const suffix = record.quote_no && record.quote_no.trim() ? record.quote_no.trim().replace(/\s+/g, '_') : 'ARCHIVE';
+        await savePdfCopy('client', suffix);
+      } catch (error) {
+        console.warn(error);
+        alert(currentLang() === 'en'
+          ? 'PDF generation failed for the archived quote.'
+          : 'Generazione PDF non riuscita per il preventivo archiviato.');
+      } finally {
+        // Restore original state and UI
+        state = previousState;
+        currentStep = previousStep;
+        render();
+      }
     }
 
     function loadArchiveRecord(id) {
@@ -9054,7 +9141,7 @@
       if (!target) return;
       const id = target.dataset.id;
       const action = target.dataset.archiveAction;
-      if (action === 'download') downloadArchiveRecord(id);
+      if (action === 'download') downloadArchivePdf(id);
       if (action === 'load') loadArchiveRecord(id);
       if (action === 'delete') deleteArchiveRecord(id);
     }
@@ -9091,8 +9178,7 @@
       const light = stateWithoutEmbeddedImages(state);
       const wrapped = auditExportEnvelope(light, 'light_draft_no_images');
       writeStateNow(true, light, LIGHT_DRAFT_STORAGE_KEY);
-      const blob = new Blob([JSON.stringify(wrapped, null, 2)], { type: 'application/json' });
-      downloadBlob(blob, `${fileBaseName()}-LIGHT-DRAFT.json`);
+      // Light drafts are persisted to the browser only. No JSON file is downloaded.
       announce(t('app.lightDraftSaved'));
     }
 
