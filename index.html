@@ -2676,7 +2676,7 @@
               <div class="field full"><label data-i18n="fields.clientNotes" for="clientNotes">Note per il cliente</label><textarea id="clientNotes" data-localized="client.notes"></textarea></div>
               <!-- Button to search for an existing client in the HOAEXP CRM -->
               <div class="field full">
-                <button type="button" id="clientSearchBtn" class="btn small" style="margin-top: 4px;" onclick="promptSearchClient()">
+                <button type="button" id="clientSearchBtn" class="btn small" style="margin-top: 4px;">
                   Cerca cliente esistente
                 </button>
               </div>
@@ -7467,6 +7467,11 @@
       syncSecurityNotice();
       bindFixedReadonlyFields();
       updateStepVisibility();
+      // Bind the client search button after the DOM has been updated. This ensures that
+      // the event handler remains attached even when the UI is re-rendered. Without
+      // rebinding, clicking the “Cerca cliente esistente” button would do nothing on
+      // subsequent renders because the underlying DOM node is replaced.
+      bindClientSearchBtn();
       saveState(true);
     }
 
@@ -7520,6 +7525,25 @@
         input.value = value === undefined || value === null ? '' : value;
       });
       $$('[data-localized]').forEach(input => { input.value = localized(input.dataset.localized); });
+    }
+
+    /**
+     * Attach a click handler to the “Cerca cliente esistente” button. When the
+     * button is clicked, the promptSearchClient() helper is invoked. The
+     * handler is re-applied each time the UI is rendered to account for DOM
+     * replacements. Existing handlers are overwritten using the onclick
+     * property to avoid multiple attachments.
+     */
+    function bindClientSearchBtn() {
+      const btn = document.getElementById('clientSearchBtn');
+      if (btn) {
+        btn.onclick = function (ev) {
+          ev.preventDefault();
+          if (typeof promptSearchClient === 'function') {
+            promptSearchClient();
+          }
+        };
+      }
     }
 
     function updateStepVisibility() {
@@ -7809,17 +7833,36 @@
           rows.push(catalogLine({ it: `${productName} - Policy 1 adulto + 1 bambino ${childAgeIt}: quota 2 adulti safari condiviso`, en: `${productName} - 1 adult + 1 child aged ${childAgeEn} policy: 2 adult shared safari rates` }, rates.adultDouble1, 2, seasonNote));
         } else {
           if (adults > 0) {
-            let adultDoubleQty = adults;
-            let adultThirdQty = 0;
-            if (!isDaySafari && rates.adultThird && adults >= 3) {
-              adultDoubleQty = 2;
-              adultThirdQty = adults - 2;
-            }
-            if (adultDoubleQty > 0) {
-              rows.push(catalogLine({ it: `${productName} - Quota adulto safari condiviso`, en: `${productName} - Shared safari adult rate` }, rates.adultDouble1, adultDoubleQty, seasonNote));
-            }
-            if (adultThirdQty > 0) {
-              rows.push(catalogLine({ it: `${productName} - 3° adulto / adulto in tripla safari condiviso`, en: `${productName} - 3rd adult / triple room shared safari rate` }, rates.adultThird, adultThirdQty, seasonNote));
+            // Determine how many double rooms are needed for adults. Shared safaris may
+            // define special rates for groups of 2, 4, 6, etc. We attempt to use the
+            // most specific group rate available (e.g. adultDouble2 for 4 adults or
+            // adultDouble3 for 6 adults). If such a rate is not defined, we fall back
+            // to the legacy logic of charging two adults at the base rate and the rest
+            // at the third-adult rate.
+            const rooms = Math.ceil(adults / 2);
+            const groupRateKey = 'adultDouble' + rooms;
+            if (!isDaySafari && rates[groupRateKey]) {
+              // Use the dedicated group rate for all adults. If there is an odd adult,
+              // they are still charged at the same group rate so that each pair of
+              // travellers effectively shares a double room. This ensures that
+              // groups of 4 or 6 are priced correctly based on the number of rooms.
+              rows.push(catalogLine({ it: `${productName} - Quota adulto safari condiviso`, en: `${productName} - Shared safari adult rate` }, rates[groupRateKey], adults, seasonNote));
+            } else {
+              // Fallback: charge the first two adults at the base rate and any
+              // additional adults at the third‑adult rate. This mirrors the
+              // original behaviour when dedicated group rates are unavailable.
+              let adultDoubleQty = adults;
+              let adultThirdQty = 0;
+              if (!isDaySafari && rates.adultThird && adults >= 3) {
+                adultDoubleQty = 2;
+                adultThirdQty = adults - 2;
+              }
+              if (adultDoubleQty > 0) {
+                rows.push(catalogLine({ it: `${productName} - Quota adulto safari condiviso`, en: `${productName} - Shared safari adult rate` }, rates.adultDouble1, adultDoubleQty, seasonNote));
+              }
+              if (adultThirdQty > 0) {
+                rows.push(catalogLine({ it: `${productName} - 3° adulto / adulto in tripla safari condiviso`, en: `${productName} - 3rd adult / triple room shared safari rate` }, rates.adultThird, adultThirdQty, seasonNote));
+              }
             }
           }
           if (children > 0) {
@@ -7837,31 +7880,101 @@
       } else if (total <= 2) {
         rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 1 veicolo`, en: `${productName} - Adult in double, 1 vehicle` }, rates.adultDouble1, total, seasonNote));
       } else if (total === 4) {
-        rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 2 camere, 1 veicolo`, en: `${productName} - Adult in double, 2 rooms, 1 vehicle` }, rates.adultDouble2, total, seasonNote));
-      } else if (total === 5) {
-        rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 2 camere, 1 veicolo`, en: `${productName} - Adult in double, 2 rooms, 1 vehicle` }, rates.adultDouble2, 4, seasonNote));
-        rows.push(catalogLine(children > 0 ? { it: `${productName} - 3° bambino in doppia`, en: `${productName} - 3rd child in double` } : { it: `${productName} - 3° adulto in doppia`, en: `${productName} - 3rd adult in double` }, children > 0 ? rates.childThird : rates.adultThird, 1, seasonNote));
-      } else {
-        // When there are six or more travellers (adults + children), the legacy logic
-        // applied the adultDouble3 rate uniformly to all passengers. This caused
-        // children to be billed at the full adult rate even when a child-specific
-        // price exists (rates.childThird). To restore correct pricing for mixed
-        // groups, split the rows between adults and children when at least one
-        // child is present. Adults are charged the adultDouble3 rate and children
-        // are charged the childThird rate. If there are no children, fall back
-        // to the original behaviour (all adults).
+        // When there are exactly four travellers, split pricing between adults and children. All
+        // adults are charged the adultDouble2 rate (two double rooms) while each child pays
+        // the childThird rate. This prevents children from being charged the adult rate when
+        // there are both adults and children in the party. If there are no children, apply
+        // the adultDouble2 rate to all four travellers.
         if (children > 0) {
           if (adults > 0) {
-            rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 3 camere, 1 veicolo`, en: `${productName} - Adult in double, 3 rooms, 1 vehicle` }, rates.adultDouble3, adults, seasonNote));
+            rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 2 camere, 1 veicolo`, en: `${productName} - Adult in double, 2 rooms, 1 vehicle` }, rates.adultDouble2, adults, seasonNote));
           }
-          // Label matches other child rows (see total === 5 case) to indicate
-          // the third/fourth child in a double room. Note: youths aged 12 and
-          // above must be entered as adults.
-          rows.push(catalogLine({ it: `${productName} - 3° bambino in doppia`, en: `${productName} - 3rd child in double` }, rates.childThird, children, seasonNote));
+          rows.push(catalogLine({ it: `${productName} - Quota bambino in doppia`, en: `${productName} - Child rate in double` }, rates.childThird, children, seasonNote));
         } else {
-          rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 3 camere, 1 veicolo`, en: `${productName} - Adult in double, 3 rooms, 1 vehicle` }, rates.adultDouble3, Math.min(total, 6), seasonNote));
+          rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 2 camere, 1 veicolo`, en: `${productName} - Adult in double, 2 rooms, 1 vehicle` }, rates.adultDouble2, total, seasonNote));
         }
-      }
+      } else if (total === 5) {
+        // For five travellers, allocate two double rooms (four adults) and handle the remaining
+        // traveller separately. If there are children present, charge them the childThird rate;
+        // otherwise charge the leftover adult the adultThird rate.
+        rows.push(catalogLine({ it: `${productName} - Adulto in doppia, 2 camere, 1 veicolo`, en: `${productName} - Adult in double, 2 rooms, 1 vehicle` }, rates.adultDouble2, 4, seasonNote));
+        const leftoverIsChild = children > 0 && children + adults === 5;
+        rows.push(catalogLine(leftoverIsChild ? { it: `${productName} - Quota bambino in doppia`, en: `${productName} - Child rate in double` } : { it: `${productName} - 3° adulto in doppia`, en: `${productName} - 3rd adult in double` }, leftoverIsChild ? rates.childThird : rates.adultThird, 1, seasonNote));
+        } else {
+          // Handle groups of four or more travellers (non-shared safaris). Adults are
+          // charged using the most specific group rate available (adultDouble2,
+          // adultDouble3, etc.). Children always use the childThird rate.
+          if (children > 0) {
+            // Separate adult and child pricing. Determine the appropriate rate for
+            // adults based on the number of rooms (ceil division by two). Use the
+            // largest available group rate defined in the product. If a matching
+            // adultDoubleN is not defined, fall back to adultDouble2.
+            if (adults > 0) {
+              const rooms = Math.ceil(adults / 2);
+              let usedKey = null;
+              // Prefer the exact group rate if available
+              const exactKey = 'adultDouble' + rooms;
+              if (rooms > 1 && rates[exactKey]) {
+                usedKey = exactKey;
+              } else if (rates.adultDouble2) {
+                usedKey = 'adultDouble2';
+              } else {
+                usedKey = 'adultDouble1';
+              }
+              rows.push(catalogLine({ it: `${productName} - Adulto in doppia, ${Math.max(1, rooms)} camere, 1 veicolo`, en: `${productName} - Adult in double, ${Math.max(1, rooms)} rooms, 1 vehicle` }, rates[usedKey], adults, seasonNote));
+            }
+            // Children charged at childThird regardless of group size
+            rows.push(catalogLine({ it: `${productName} - Quota bambino in doppia`, en: `${productName} - Child rate in double` }, rates.childThird, children, seasonNote));
+          } else {
+            // All adults. Use the most specific adultDoubleN rate available. If there
+            // are an odd number of adults and no dedicated rate for the resulting
+            // group size, allocate one adult to the adultThird rate.
+            const rooms = Math.floor(adults / 2);
+            const leftover = adults % 2;
+            if (rooms >= 2) {
+              const rateKey = 'adultDouble' + rooms;
+              if (rates[rateKey]) {
+                // Use the dedicated group rate for the even portion. If there is
+                // a leftover adult, charge them at the third-adult rate.
+                const evenQty = rooms * 2;
+                rows.push(catalogLine({ it: `${productName} - Adulto in doppia, ${rooms} camere, 1 veicolo`, en: `${productName} - Adult in double, ${rooms} rooms, 1 vehicle` }, rates[rateKey], evenQty, seasonNote));
+                if (leftover > 0) {
+                  rows.push(catalogLine({ it: `${productName} - 3° adulto in doppia`, en: `${productName} - 3rd adult in double` }, rates.adultThird || rates.adultDouble1, leftover, seasonNote));
+                }
+              } else if (rates.adultDouble2) {
+                // Fall back to using adultDouble2 for pairs and adultThird for
+                // any remaining adult.
+                if (adults % 2 === 0) {
+                  rows.push(catalogLine({ it: `${productName} - Adulto in doppia, ${rooms} camere, 1 veicolo`, en: `${productName} - Adult in double, ${rooms} rooms, 1 vehicle` }, rates.adultDouble2, adults, seasonNote));
+                } else {
+                  const doubleQty = adults - 1;
+                  const fallbackRooms = Math.max(1, doubleQty / 2);
+                  if (doubleQty > 0) {
+                    rows.push(catalogLine({ it: `${productName} - Adulto in doppia, ${fallbackRooms} camere, 1 veicolo`, en: `${productName} - Adult in double, ${fallbackRooms} rooms, 1 vehicle` }, rates.adultDouble2, doubleQty, seasonNote));
+                  }
+                  rows.push(catalogLine({ it: `${productName} - 3° adulto in doppia`, en: `${productName} - 3rd adult in double` }, rates.adultThird || rates.adultDouble1, 1, seasonNote));
+                }
+              } else {
+                // If no group rates exist beyond double1, charge all adults at
+                // adultDouble1.
+                rows.push(catalogLine({ it: `${productName} - Adulto in doppia`, en: `${productName} - Adult in double` }, rates.adultDouble1, adults, seasonNote));
+              }
+            } else {
+              // Fewer than four adults fall back to legacy handling.
+              if (adults % 2 === 0) {
+                const roomCount = Math.max(1, adults / 2);
+                rows.push(catalogLine({ it: `${productName} - Adulto in doppia, ${roomCount} camere, 1 veicolo`, en: `${productName} - Adult in double, ${roomCount} rooms, 1 vehicle` }, rates.adultDouble1, adults, seasonNote));
+              } else {
+                const doubleQty = adults - 1;
+                const roomCount = Math.max(1, doubleQty / 2);
+                if (doubleQty > 0) {
+                  rows.push(catalogLine({ it: `${productName} - Adulto in doppia, ${roomCount} camere, 1 veicolo`, en: `${productName} - Adult in double, ${roomCount} rooms, 1 vehicle` }, rates.adultDouble1, doubleQty, seasonNote));
+                }
+                rows.push(catalogLine({ it: `${productName} - 3° adulto in doppia`, en: `${productName} - 3rd adult in double` }, rates.adultThird || rates.adultDouble1, 1, seasonNote));
+              }
+            }
+          }
+        }
       if (catalog.extraDarNight && product.extraHotelEnabled !== false) {
         const hotel = catalogExtraHotel(product);
         const room = catalogExtraRoom(product);
