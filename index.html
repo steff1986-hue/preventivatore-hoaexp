@@ -8978,6 +8978,42 @@
       return mergeServerArchiveToLocal(data.archive);
     }
 
+    function quoteNumberIsPlaceholder(value) {
+      return /^HOA-\d{4}-0*1$/i.test(String(value || '').trim());
+    }
+
+    function applyPreviewQuoteNumber() {
+      if (!state.meta || typeof state.meta !== 'object') state.meta = defaultState().meta;
+      const current = String(state.meta.quoteNo || '').trim();
+      const generated = Boolean(state.audit && state.audit.generated_at);
+      if (generated) return false;
+      const next = nextQuoteNoPreview();
+      if (!current || quoteNumberIsPlaceholder(current) || quoteCounterFromNo(current)) {
+        if (current !== next) {
+          state.meta.quoteNo = next;
+          if (state.audit) state.audit.quote_id = next;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    async function syncPreviewQuoteNumberFromServer({ rerender = true } = {}) {
+      try {
+        await refreshQuoteArchiveFromServer();
+        const changed = applyPreviewQuoteNumber();
+        if (changed) {
+          saveState(false);
+          if (rerender) render();
+          else renderPreview();
+        }
+        return changed;
+      } catch (error) {
+        console.warn('Quote number preview sync failed', error);
+        return false;
+      }
+    }
+
     async function reserveServerQuoteNumber() {
       const data = await quoteServerRequest('allocate_number', { year: quoteYear() });
       if (!data || !data.quote_no) throw new Error('Quote number unavailable');
@@ -10085,6 +10121,7 @@ ${currentSensitiveJsonWarning()}`);
       $('#addPriceBtn').addEventListener('click', addPrice);
       bindCatalogEvents();
       $('#refreshPreviewBtn').addEventListener('click', renderPreview);
+      $('#refreshPreviewBtn').addEventListener('click', () => syncPreviewQuoteNumberFromServer({ rerender: false }));
       window.addEventListener('resize', () => requestAnimationFrame(syncPreviewScale));
       $('#printBtn').addEventListener('click', downloadAdvisorB2bPdf);
       $('#downloadPdfBtn').addEventListener('click', downloadPdf);
@@ -10111,6 +10148,7 @@ ${currentSensitiveJsonWarning()}`);
 
     bindEvents();
     render();
+    syncPreviewQuoteNumberFromServer();
   })();
   </script>
 </body>
